@@ -1,11 +1,11 @@
 ---
 layout: project.njk
-title: "WHO IS MUBI?"
+title: WHO IS MUBI?
 date: 24 July 2024
 year: "2024"
-role: "Cinematography"
+role: Cinematography
 hero: ""
-video: ""
+video: https://youtu.be/LajtUOV6h_Y?si=WsiNkvOFmjeV2U38
 description: ""
 credits: []
 gallery: []
