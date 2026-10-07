@@ -1,4 +1,43 @@
 ---
 layout: base.njk
 ---
-<main class="project"><a class="meta" href="/#work">← Back to work</a><h1>{{title}}</h1><div class="meta">{{date}} · {{role}}</div><div class="hero-project"><span class="ph">[ project hero image / video ]</span></div><p class="intro">Add your project description in the editor.</p><div class="gallery"><div class="ph">[ still ]</div><div class="ph">[ still ]</div><div class="ph">[ BTS ]</div></div></main><footer><span>MUBIKISHORE</span><span>© 2026</span></footer>
+<main class="project">
+  <a class="meta" href="/#work">← Back to work</a>
+
+  <h1>{{ title }}</h1>
+
+  <div class="meta">{{ date }} · {{ role }}</div>
+
+  <div class="hero-project">
+    {% if hero %}
+      <img src="{{ hero }}" alt="{{ title }}" loading="eager">
+    {% else %}
+      <span class="ph">[ project hero image / video ]</span>
+    {% endif %}
+  </div>
+
+  {% if description %}
+    <p class="intro">{{ description }}</p>
+  {% endif %}
+
+  {% if video %}
+    <div class="video-link">
+      <a href="{{ video }}" target="_blank" rel="noopener">
+        WATCH FILM ↗
+      </a>
+    </div>
+  {% endif %}
+
+  {% if gallery %}
+    <div class="gallery">
+      {% for image in gallery %}
+        <img src="{{ image.image }}" alt="{{ title }}" loading="lazy">
+      {% endfor %}
+    </div>
+  {% endif %}
+</main>
+
+<footer>
+  <span>MUBIKISHORE</span>
+  <span>© 2026</span>
+</footer>
