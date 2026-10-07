@@ -1,5 +1,6 @@
 ---
 title: MUBIKISHORE
+layout: base.njk
 ---
 <section class="hero"><div class="hero-box"><div class="hero-copy"><div class="eyebrow">{{site.tagline}}</div><h1>MUBI<br>KISHORE</h1><div class="ph">[ replace with hero still / reel ]</div></div></div><div class="hero-meta meta"><span>{{site.location}}</span><span>Selected works · 2024—2026</span><span>Scroll ↓</span></div></section>
 <section class="section" id="work"><div class="head"><span>01 / Selected Work</span><span>{{collections.projects|length}} projects</span></div><p class="intro">Films, collaborations, experiments and things made along the way.</p><div class="work">{% for p in collections.projects %}<a class="row" href="{{p.url}}"><span class="meta">{{p.data.year}}</span><span class="title">{{p.data.title}}</span><span class="meta date">{{p.data.date}}</span><span>→</span></a>{% endfor %}</div></section>
