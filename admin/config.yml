@@ -1,0 +1,58 @@
+backend:
+  name: git-gateway
+  branch: main
+media_folder: "static/images/uploads"
+public_folder: "/images/uploads"
+
+collections:
+  - name: projects
+    label: Work / Projects
+    folder: src/projects
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: Title, name: title, widget: string}
+      - {label: Date, name: date, widget: datetime, format: "DD MMMM YYYY", time_format: false}
+      - {label: Year, name: year, widget: string}
+      - {label: Role, name: role, widget: string, default: Cinematography}
+      - {label: Hero Image, name: hero, widget: image, required: false}
+      - {label: Video / Reel Link, name: video, widget: string, required: false}
+      - {label: Description, name: description, widget: text, required: false}
+      - {label: Credits, name: credits, widget: list, required: false, field: {label: Credit, name: credit, widget: string}}
+      - {label: Gallery, name: gallery, widget: list, required: false, field: {label: Image, name: image, widget: image}}
+  - name: other
+    label: Other Things
+    folder: src/other
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: Title, name: title, widget: string}
+      - {label: Date, name: date, widget: datetime, required: false}
+      - {label: Type, name: type, widget: select, options: ["35mm","BTS","Photography","Frame / Test","Contact Sheet","Random"]}
+      - {label: Image, name: image, widget: image}
+      - {label: Caption, name: caption, widget: string, required: false}
+  - name: store
+    label: Store
+    folder: src/store
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: Product Name, name: title, widget: string}
+      - {label: Price, name: price, widget: string, required: false}
+      - {label: Image, name: image, widget: image, required: false}
+      - {label: Description, name: description, widget: text, required: false}
+      - {label: Link, name: link, widget: string, required: false}
+      - {label: Available, name: available, widget: boolean, default: true}
+  - name: settings
+    label: Site Settings
+    files:
+      - file: src/_data/site.json
+        label: Site Settings
+        name: site
+        fields:
+          - {label: Name, name: name, widget: string}
+          - {label: Tagline, name: tagline, widget: string}
+          - {label: Location, name: location, widget: string}
+          - {label: Instagram, name: instagram, widget: string, required: false}
+          - {label: Email, name: email, widget: string, required: false}
+          - {label: About, name: about, widget: text, required: false}
