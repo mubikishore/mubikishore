@@ -1,0 +1,9 @@
+---
+title: MUBIKISHORE
+---
+<section class="hero"><div class="hero-box"><div class="hero-copy"><div class="eyebrow">{{site.tagline}}</div><h1>MUBI<br>KISHORE</h1><div class="ph">[ replace with hero still / reel ]</div></div></div><div class="hero-meta meta"><span>{{site.location}}</span><span>Selected works · 2024—2026</span><span>Scroll ↓</span></div></section>
+<section class="section" id="work"><div class="head"><span>01 / Selected Work</span><span>{{collections.projects|length}} projects</span></div><p class="intro">Films, collaborations, experiments and things made along the way.</p><div class="work">{% for p in collections.projects %}<a class="row" href="{{p.url}}"><span class="meta">{{p.data.year}}</span><span class="title">{{p.data.title}}</span><span class="meta date">{{p.data.date}}</span><span>→</span></a>{% endfor %}</div></section>
+<section class="section" id="store"><div class="head"><span>02 / Store</span><span>Objects / prints / editions</span></div><div class="grid store">{% for p in collections.store %}<div class="product"><div class="product-img"><span class="ph">[ product image ]</span></div><div class="product-info"><div class="title">{{p.data.title}}</div><div class="meta">{{p.data.price}}</div></div></div>{% endfor %}</div></section>
+<section class="section" id="other"><div class="head"><span>03 / Other Things</span><span>35mm / BTS / photography / tests</span></div><div class="grid">{% for p in collections.other %}<div class="tile"><span class="ph">[ {{p.data.type}} ]</span></div>{% endfor %}</div></section>
+<section class="section" id="about"><div class="head"><span>04 / About</span><span>Words later</span></div><div class="about"><div class="about-copy">{{site.about}}</div><div class="about-side">{{site.location}}<br><br>Available for films / collaborations / commercial work<br><br>{{site.instagram}}<br>{{site.email}}</div></div></section>
+<footer><span>MUBIKISHORE</span><span>© 2026</span></footer>
