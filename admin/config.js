@@ -1,5 +1,5 @@
 window.MUBI_CONFIG = {
   SUPABASE_URL: "https://ycchdnnugjacqaqojtvp.supabase.co",
-  SUPABASE_PUBLISHABLE_KEY: "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE",
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_d0rdksXSPd2ab7FZZZGxrw_oP7wzIpD",
   MEDIA_BUCKET: "media"
 };
