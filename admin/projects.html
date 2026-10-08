@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Projects — MUBIKISHORE</title><link rel="stylesheet" href="/admin/styles.css"></head><body><header class="top"><div class="logo">MUBIKISHORE</div><div class="top-right"><div class="admin-label">ADMIN / SITE CONTENT DASHBOARD</div><button class="logout" id="logout">SIGN OUT</button></div></header><div class="layout"><aside class="sidebar">
+<div class="section-label">CONTENT</div>
+<button class="nav-button" data-nav="dashboard">Dashboard</button>
+<button class="nav-button" data-nav="projects">Projects</button>
+<button class="nav-button" data-nav="project-edit">Add Project</button>
+<div class="section-label">STORE</div>
+<button class="nav-button" data-nav="store">Products</button>
+<div class="section-label">OTHER</div>
+<button class="nav-button" data-nav="other">Other Content</button>
+<div class="section-label">SYSTEM</div>
+<button class="nav-button" data-nav="settings">Settings</button>
+</aside><main class="content"><div class="bar" style="margin-top:0"><div><div class="eyebrow">CONTENT</div><h1 style="font-size:clamp(42px,6vw,72px)">PROJECTS</h1></div><button class="btn primary" onclick="location.href='/admin/project-edit.html'">ADD PROJECT</button></div><div id="list"></div></main></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/admin/config.js"></script><script src="/admin/app.js"></script><script>
+window.addEventListener("load",async()=>{const r=await MUBI_SUPABASE.from("projects").select("*").order("date",{ascending:false});if(r.error){list.innerHTML='<div class="notice">Run the included Supabase policies.sql file.</div>';return}list.innerHTML=(r.data||[]).map(p=>'<div class="row"><div><div class="title">'+escapeHtml(p.title||"Untitled")+'</div><div class="small">'+escapeHtml(p.description||"")+'</div></div><div class="small">'+escapeHtml(p.date||"")+'</div><div class="small">'+(p.published?"PUBLISHED":"DRAFT")+'</div><div class="actions"><button class="btn" onclick="location.href=\'/admin/project-edit.html?id='+p.id+'\'">EDIT</button><button class="btn danger" onclick="removeProject(\''+p.id+'\')">DELETE</button></div></div>').join("")||'<div class="notice">No projects yet.</div>'});
+async function removeProject(id){if(!confirm("Delete this project?"))return;const r=await MUBI_SUPABASE.from("projects").delete().eq("id",id);if(r.error){alert(r.error.message);return}location.reload()}
+</script></body></html>
