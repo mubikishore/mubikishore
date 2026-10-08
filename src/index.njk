@@ -3,8 +3,116 @@ title: MUBIKISHORE
 layout: base.njk
 ---
 <section class="hero"><div class="hero-box"><div class="hero-copy"><div class="eyebrow">{{site.tagline}}</div><h1>MUBI<br>KISHORE</h1><div class="ph">[ replace with hero still / reel ]</div></div></div><div class="hero-meta meta"><span>{{site.location}}</span><span>Selected works · 2024—2026</span><span>Scroll ↓</span></div></section>
-<section class="section" id="work"><div class="head"><span>01 / Selected Work</span><span>{{collections.projects|length}} projects</span></div><p class="intro">Films, collaborations, experiments and things made along the way.</p><div class="work">{% for p in collections.projects %}<a class="row" href="{{p.url}}"><span class="meta">{{p.data.year}}</span><span class="title">{{p.data.title}}</span><span class="meta date">{{p.data.date}}</span><span>→</span></a>{% endfor %}</div></section>
-<section class="section" id="store"><div class="head"><span>02 / Store</span><span>Objects / prints / editions</span></div><div class="grid store">{% for p in collections.store %}<div class="product"><div class="product-img"><span class="ph">[ product image ]</span></div><div class="product-info"><div class="title">{{p.data.title}}</div><div class="meta">{{p.data.price}}</div></div></div>{% endfor %}</div></section>
-<section class="section" id="other"><div class="head"><span>03 / Other Things</span><span>35mm / BTS / photography / tests</span></div><div class="grid">{% for p in collections.other %}<div class="tile"><span class="ph">[ {{p.data.type}} ]</span></div>{% endfor %}</div></section>
-<section class="section" id="about"><div class="head"><span>04 / About</span><span>Words later</span></div><div class="about"><div class="about-copy">{{site.about}}</div><div class="about-side">{{site.location}}<br><br>Available for films / collaborations / commercial work<br><br>{{site.instagram}}<br>{{site.email}}</div></div></section>
-<footer><span>MUBIKISHORE</span><span>© 2026</span></footer>
+
+<section class="section" id="work">
+  <div class="head"><span>01 / Selected Work</span><span id="project-count">0 projects</span></div>
+  <p class="intro">Films, collaborations, experiments and things made along the way.</p>
+  <div class="work" id="cms-projects">
+    <div class="row">
+      <span class="meta">—</span>
+      <span class="title">Loading projects…</span>
+      <span class="meta date"></span>
+      <span>→</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="store">
+  <div class="head"><span>02 / Store</span><span>Objects / prints / editions</span></div>
+  <div class="grid store">
+    {% for p in collections.store %}
+    <div class="product">
+      <div class="product-img"><span class="ph">[ product image ]</span></div>
+      <div class="product-info">
+        <div class="title">{{p.data.title}}</div>
+        <div class="meta">{{p.data.price}}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section" id="other">
+  <div class="head"><span>03 / Other Things</span><span>35mm / BTS / photography / tests</span></div>
+  <div class="grid">
+    {% for p in collections.other %}
+    <div class="tile"><span class="ph">[ {{p.data.type}} ]</span></div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section" id="about">
+  <div class="head"><span>04 / About</span><span>Words later</span></div>
+  <div class="about">
+    <div class="about-copy">{{site.about}}</div>
+    <div class="about-side">
+      {{site.location}}<br><br>
+      Available for films / collaborations / commercial work<br><br>
+      {{site.instagram}}<br>
+      {{site.email}}
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>MUBIKISHORE</span>
+  <span>© 2026</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/admin/config.js"></script>
+
+<script>
+(async function () {
+  const list = document.getElementById("cms-projects");
+  const count = document.getElementById("project-count");
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  try {
+    const { data, error } = await MUBI_SUPABASE
+      .from("projects")
+      .select("title, slug, date, year, published")
+      .eq("published", true)
+      .order("date", { ascending: false, nullsFirst: false });
+
+    if (error) throw error;
+
+    count.textContent = `${data.length} projects`;
+
+    if (!data.length) {
+      list.innerHTML = '<div class="row"><span class="meta">—</span><span class="title">No projects yet.</span><span class="meta date"></span><span>→</span></div>';
+      return;
+    }
+
+    list.innerHTML = data.map(project => {
+      const date = project.date
+        ? new Date(project.date + "T00:00:00").toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+          })
+        : "";
+
+      return `<a class="row" href="/projects/${encodeURIComponent(project.slug)}/">
+        <span class="meta">${escapeHtml(project.year || "")}</span>
+        <span class="title">${escapeHtml(project.title)}</span>
+        <span class="meta date">${escapeHtml(date)}</span>
+        <span>→</span>
+      </a>`;
+    }).join("");
+
+  } catch (error) {
+    console.error("MUBIKISHORE CMS:", error);
+
+    list.innerHTML = '<div class="row"><span class="meta">!</span><span class="title">Unable to load projects.</span><span class="meta date"></span><span>—</span></div>';
+  }
+})();
+</script>
