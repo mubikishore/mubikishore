@@ -1,1 +1,347 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ title or site.name }}</title><style>*{box-sizing:border-box}body{margin:0;background:#0a0a0a;color:#f1f0ec;font:14px Arial,sans-serif}a{color:inherit;text-decoration:none}header{position:fixed;top:0;left:0;right:0;padding:18px 22px;display:flex;justify-content:space-between;z-index:9;mix-blend-mode:difference}.brand{font-weight:600}nav{display:flex;gap:20px;text-transform:uppercase;font:12px monospace}.hero{min-height:100vh;padding:120px 22px 24px}.hero-box{height:75vh;border:1px solid #292929;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#292929,#0a0a0a)}.hero-copy{text-align:center}.eyebrow,.meta,.ph{font:11px monospace;color:#999;text-transform:uppercase}.hero h1{font-size:clamp(50px,10vw,140px);line-height:.8;letter-spacing:-.08em;font-weight:500}.hero-meta{display:flex;justify-content:space-between;padding-top:14px}.section{padding:110px 22px 70px}.head{display:flex;justify-content:space-between;border-bottom:1px solid #292929;padding-bottom:12px;margin-bottom:28px;font:12px monospace;text-transform:uppercase}.intro{font-size:clamp(28px,4vw,58px);max-width:850px;letter-spacing:-.05em}.work{border:1px solid #292929}.row{display:grid;grid-template-columns:90px 1fr 180px 25px;padding:17px 14px;border-bottom:1px solid #292929}.row:hover{background:#151515}.title{font-size:clamp(18px,2.2vw,29px)}.meta{color:#777}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#292929}.tile{aspect-ratio:1;background:#151515;display:flex;align-items:center;justify-content:center}.store{grid-template-columns:repeat(3,1fr)}.product{background:#121212}.product-img{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#191919}.product-info{padding:14px}.about{display:grid;grid-template-columns:1.4fr .6fr;gap:60px;border-top:1px solid #292929;padding-top:25px}.about-copy{font-size:clamp(24px,3vw,42px);letter-spacing:-.04em}.about-side{font:11px monospace;color:#999;text-transform:uppercase;line-height:1.8}footer{padding:90px 22px 24px;border-top:1px solid #292929;display:flex;justify-content:space-between;font:11px monospace}.project{padding:130px 22px 70px}.project h1{font-size:clamp(50px,10vw,150px);line-height:.8;letter-spacing:-.08em;font-weight:500}.hero-project{margin-top:50px;min-height:65vh;border:1px solid #292929;display:flex;align-items:center;justify-content:center;background:#151515}.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#292929;margin-top:50px}.gallery>div{aspect-ratio:16/10;background:#151515;display:flex;align-items:center;justify-content:center}@media(max-width:700px){header{padding:14px}nav{gap:10px;font-size:10px}.hero{padding:90px 14px 14px}.section,.project{padding-left:14px;padding-right:14px}.row{grid-template-columns:45px 1fr 20px}.row .date{display:none}.grid{grid-template-columns:repeat(2,1fr)}.store{grid-template-columns:1fr 1fr}.about{grid-template-columns:1fr}.gallery{grid-template-columns:1fr 1fr}footer{padding-left:14px;padding-right:14px;display:block}}</style><script>if(/(invite|recovery|confirmation|email_change)_token=/.test(location.hash)&&!location.pathname.startsWith("/admin"))location.replace("/admin/"+location.hash)</script></head><body><header><a class="brand" href="/">MUBIKISHORE</a><nav><a href="/#work">Work</a><a href="/#store">Store</a><a href="/#other">Other</a><a href="/#about">About</a></nav></header>{{content|safe}}</body></html>
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ title or site.name }}</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      color: #f1f0ec;
+      font: 14px Arial, sans-serif;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 18px 22px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 9;
+      mix-blend-mode: difference;
+    }
+
+    .brand {
+      font-weight: 600;
+    }
+
+    nav {
+      display: flex;
+      gap: 20px;
+      text-transform: uppercase;
+      font: 12px monospace;
+    }
+
+    .hero {
+      min-height: 100vh;
+      padding: 120px 22px 24px;
+    }
+
+    .hero-box {
+      height: 75vh;
+      border: 1px solid #292929;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, #292929, #0a0a0a);
+    }
+
+    .hero-copy {
+      text-align: center;
+    }
+
+    .eyebrow,
+    .meta,
+    .ph {
+      font: 11px monospace;
+      color: #999;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      font-size: clamp(50px, 10vw, 140px);
+      line-height: .8;
+      letter-spacing: -.08em;
+      font-weight: 500;
+    }
+
+    .hero-meta {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 14px;
+    }
+
+    .section {
+      padding: 110px 22px 70px;
+    }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #292929;
+      padding-bottom: 12px;
+      margin-bottom: 28px;
+      font: 12px monospace;
+      text-transform: uppercase;
+    }
+
+    .intro {
+      font-size: clamp(28px, 4vw, 58px);
+      max-width: 850px;
+      letter-spacing: -.05em;
+    }
+
+    .work {
+      border: 1px solid #292929;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 90px 1fr 180px 25px;
+      padding: 17px 14px;
+      border-bottom: 1px solid #292929;
+    }
+
+    .row:hover {
+      background: #151515;
+    }
+
+    .title {
+      font-size: clamp(18px, 2.2vw, 29px);
+    }
+
+    .meta {
+      color: #777;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: #292929;
+    }
+
+    .tile {
+      aspect-ratio: 1;
+      background: #151515;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .store {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .product {
+      background: #121212;
+    }
+
+    .product-img {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #191919;
+    }
+
+    .product-info {
+      padding: 14px;
+    }
+
+    .about {
+      display: grid;
+      grid-template-columns: 1.4fr .6fr;
+      gap: 60px;
+      border-top: 1px solid #292929;
+      padding-top: 25px;
+    }
+
+    .about-copy {
+      font-size: clamp(24px, 3vw, 42px);
+      letter-spacing: -.04em;
+    }
+
+    .about-side {
+      font: 11px monospace;
+      color: #999;
+      text-transform: uppercase;
+      line-height: 1.8;
+    }
+
+    footer {
+      padding: 90px 22px 24px;
+      border-top: 1px solid #292929;
+      display: flex;
+      justify-content: space-between;
+      font: 11px monospace;
+    }
+
+    /* PROJECT PAGE */
+    .project {
+      padding: 130px 22px 70px;
+      min-width: 0;
+    }
+
+    .project h1 {
+      font-size: clamp(50px, 10vw, 150px);
+      line-height: .8;
+      letter-spacing: -.08em;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+
+    /* Main image: full available width, never stretched */
+    .hero-project {
+      width: 100%;
+      min-width: 0;
+      min-height: 0;
+      height: auto;
+      margin-top: 50px;
+      border: 0;
+      display: block;
+      background: #0a0a0a;
+      overflow: hidden;
+    }
+
+    .hero-project img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 85vh;
+      object-fit: contain;
+      object-position: center;
+      margin: 0 auto;
+    }
+
+    /* Gallery images retain their own proportions */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+      gap: 12px;
+      background: transparent;
+      margin-top: 50px;
+    }
+
+    .gallery img {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      background: #151515;
+    }
+
+    .video-link {
+      margin-top: 30px;
+      font: 12px monospace;
+      text-transform: uppercase;
+    }
+
+    .project-credits {
+      margin-top: 50px;
+      color: #999;
+      font: 12px monospace;
+      white-space: pre-line;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        padding: 14px;
+      }
+
+      nav {
+        gap: 10px;
+        font-size: 10px;
+      }
+
+      .hero {
+        padding: 90px 14px 14px;
+      }
+
+      .section,
+      .project {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .row {
+        grid-template-columns: 45px 1fr 20px;
+      }
+
+      .row .date {
+        display: none;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .store {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .about {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-project {
+        margin-top: 30px;
+      }
+
+      .hero-project img {
+        max-height: 70vh;
+      }
+
+      .gallery {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      footer {
+        padding-left: 14px;
+        padding-right: 14px;
+        display: block;
+      }
+    }
+  </style>
+
+  <script>
+    if (
+      /(invite|recovery|confirmation|email_change)_token=/.test(location.hash)
+      && !location.pathname.startsWith("/admin")
+    ) {
+      location.replace("/admin/" + location.hash);
+    }
+  </script>
+</head>
+
+<body>
+  <header>
+    <a class="brand" href="/">MUBIKISHORE</a>
+
+    <nav>
+      <a href="/#work">Work</a>
+      <a href="/#store">Store</a>
+      <a href="/#other">Other</a>
+      <a href="/#about">About</a>
+    </nav>
+  </header>
+
+  {{content|safe}}
+</body>
+</html>
