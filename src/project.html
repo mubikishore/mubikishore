@@ -1,1 +1,111 @@
 
+---
+layout: base.njk
+title: Project
+permalink: /project.html
+---
+
+<main class="project" id="project">
+  <a class="meta" href="/#work">← Back to work</a>
+  <h1 id="project-title">Loading project…</h1>
+  <div class="meta" id="project-meta"></div>
+  <div class="hero-project" id="project-hero"></div>
+  <p class="intro" id="project-description"></p>
+  <div class="video-link" id="project-video"></div>
+  <div class="gallery" id="project-gallery"></div>
+  <div class="project-credits" id="project-credits"></div>
+</main>
+
+<footer>
+  <span>MUBIKISHORE</span>
+  <span>© 2026</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/admin/config.js"></script>
+<script>
+(async function () {
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get("slug");
+
+  const title = document.getElementById("project-title");
+  const meta = document.getElementById("project-meta");
+  const hero = document.getElementById("project-hero");
+  const description = document.getElementById("project-description");
+  const video = document.getElementById("project-video");
+  const gallery = document.getElementById("project-gallery");
+  const credits = document.getElementById("project-credits");
+
+  function safe(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;",
+      '"': "&quot;", "'": "&#39;"
+    })[char]);
+  }
+
+  if (!slug) {
+    title.textContent = "Project not found";
+    return;
+  }
+
+  try {
+    const { data, error } = await MUBI_SUPABASE
+      .from("projects")
+      .select("*")
+      .eq("slug", slug)
+      .eq("published", true)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+      title.textContent = "Project not found";
+      return;
+    }
+
+    document.title = data.title + " — MUBIKISHORE";
+    title.textContent = data.title;
+    meta.textContent = [data.date, data.role].filter(Boolean).join(" · ");
+
+    if (data.hero) {
+      hero.innerHTML = '<img src="' + safe(data.hero) +
+        '" alt="' + safe(data.title) + '" loading="eager">';
+    } else {
+      hero.remove();
+    }
+
+    description.textContent = data.description || "";
+    if (!data.description) description.remove();
+
+    if (data.video) {
+      video.innerHTML = '<a href="' + safe(data.video) +
+        '" target="_blank" rel="noopener">WATCH FILM ↗</a>';
+    } else {
+      video.remove();
+    }
+
+    let images = data.gallery || [];
+    if (typeof images === "string") {
+      try { images = JSON.parse(images); } catch { images = []; }
+    }
+
+    if (Array.isArray(images) && images.length) {
+      gallery.innerHTML = images.map(item => {
+        const src = typeof item === "string" ? item : item.image;
+        return src ? '<img src="' + safe(src) +
+          '" alt="' + safe(data.title) + '" loading="lazy">' : "";
+      }).join("");
+    } else {
+      gallery.remove();
+    }
+
+    if (data.credits) {
+      credits.textContent = data.credits;
+    } else {
+      credits.remove();
+    }
+  } catch (error) {
+    console.error("Project loading error:", error);
+    title.textContent = "Unable to load project";
+  }
+})();
+</script>
