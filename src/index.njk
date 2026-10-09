@@ -101,7 +101,7 @@ layout: base.njk
           })
         : "";
 
-      return `<a class="row" href="/projects/${encodeURIComponent(project.slug)}/">
+      return `<a class="row" href="/project.html?slug=${encodeURIComponent(project.slug)}">
         <span class="meta">${escapeHtml(project.year || "")}</span>
         <span class="title">${escapeHtml(project.title)}</span>
         <span class="meta date">${escapeHtml(date)}</span>
