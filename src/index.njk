@@ -1,11 +1,28 @@
+
 ---
 title: MUBIKISHORE
 layout: base.njk
 ---
-<section class="hero"><div class="hero-box"><div class="hero-copy"><div class="eyebrow">{{site.tagline}}</div><h1>MUBI<br>KISHORE</h1><div class="ph">[ replace with hero still / reel ]</div></div></div><div class="hero-meta meta"><span>{{site.location}}</span><span>Selected works · 2024—2026</span><span>Scroll ↓</span></div></section>
+<section class="hero">
+  <div class="hero-box">
+    <div class="hero-copy">
+      <div class="eyebrow">{{site.tagline}}</div>
+      <h1>MUBI<br>KISHORE</h1>
+      <div class="ph">[ replace with hero still / reel ]</div>
+    </div>
+  </div>
+  <div class="hero-meta meta">
+    <span>{{site.location}}</span>
+    <span>Selected works · 2024—2026</span>
+    <span>Scroll ↓</span>
+  </div>
+</section>
 
 <section class="section" id="work">
-  <div class="head"><span>01 / Selected Work</span><span id="project-count">0 projects</span></div>
+  <div class="head">
+    <span>01 / Selected Work</span>
+    <span id="project-count">Loading…</span>
+  </div>
   <p class="intro">Films, collaborations, experiments and things made along the way.</p>
   <div class="work" id="cms-projects">
     <div class="row">
@@ -18,11 +35,16 @@ layout: base.njk
 </section>
 
 <section class="section" id="store">
-  <div class="head"><span>02 / Store</span><span>Objects / prints / editions</span></div>
+  <div class="head">
+    <span>02 / Store</span>
+    <span>Objects / prints / editions</span>
+  </div>
   <div class="grid store">
     {% for p in collections.store %}
     <div class="product">
-      <div class="product-img"><span class="ph">[ product image ]</span></div>
+      <div class="product-img">
+        <span class="ph">[ product image ]</span>
+      </div>
       <div class="product-info">
         <div class="title">{{p.data.title}}</div>
         <div class="meta">{{p.data.price}}</div>
@@ -33,16 +55,24 @@ layout: base.njk
 </section>
 
 <section class="section" id="other">
-  <div class="head"><span>03 / Other Things</span><span>35mm / BTS / photography / tests</span></div>
+  <div class="head">
+    <span>03 / Other Things</span>
+    <span>35mm / BTS / photography / tests</span>
+  </div>
   <div class="grid">
     {% for p in collections.other %}
-    <div class="tile"><span class="ph">[ {{p.data.type}} ]</span></div>
+    <div class="tile">
+      <span class="ph">[ {{p.data.type}} ]</span>
+    </div>
     {% endfor %}
   </div>
 </section>
 
 <section class="section" id="about">
-  <div class="head"><span>04 / About</span><span>Words later</span></div>
+  <div class="head">
+    <span>04 / About</span>
+    <span>Words later</span>
+  </div>
   <div class="about">
     <div class="about-copy">{{site.about}}</div>
     <div class="about-side">
@@ -76,19 +106,50 @@ layout: base.njk
       .replaceAll("'", "&#039;");
   }
 
+  function showError(message) {
+    count.textContent = "Projects unavailable";
+    list.innerHTML = `
+      <div class="row">
+        <span class="meta">!</span>
+        <span class="title">Unable to load projects: ${escapeHtml(message)}</span>
+        <span class="meta date"></span>
+        <span>—</span>
+      </div>`;
+  }
+
   try {
-    const { data, error } = await MUBI_SUPABASE
+    if (!window.supabase) {
+      throw new Error("Supabase library did not load. Please try again later.");
+    }
+
+    if (!window.MUBI_SUPABASE) {
+      throw new Error("Supabase client is not configured. Check /admin/config.js.");
+    }
+
+    const { data, error } = await window.MUBI_SUPABASE
       .from("projects")
       .select("title, slug, date, year, published")
       .eq("published", true)
       .order("date", { ascending: false, nullsFirst: false });
 
-    if (error) throw error;
+    if (error) {
+      throw new Error(error.message || "Supabase request failed.");
+    }
+
+    if (!Array.isArray(data)) {
+      throw new Error("The projects response was not in the expected format.");
+    }
 
     count.textContent = `${data.length} projects`;
 
-    if (!data.length) {
-      list.innerHTML = '<div class="row"><span class="meta">—</span><span class="title">No projects yet.</span><span class="meta date"></span><span>→</span></div>';
+    if (data.length === 0) {
+      list.innerHTML = `
+        <div class="row">
+          <span class="meta">—</span>
+          <span class="title">No published projects found.</span>
+          <span class="meta date"></span>
+          <span>→</span>
+        </div>`;
       return;
     }
 
@@ -101,18 +162,18 @@ layout: base.njk
           })
         : "";
 
-      return `<a class="row" href="/project.html?slug=${encodeURIComponent(project.slug)}">
-        <span class="meta">${escapeHtml(project.year || "")}</span>
-        <span class="title">${escapeHtml(project.title)}</span>
-        <span class="meta date">${escapeHtml(date)}</span>
-        <span>→</span>
-      </a>`;
+      return `
+        <a class="row" href="/project.html?slug=${encodeURIComponent(project.slug || "")}">
+          <span class="meta">${escapeHtml(project.year || "")}</span>
+          <span class="title">${escapeHtml(project.title || "Untitled project")}</span>
+          <span class="meta date">${escapeHtml(date)}</span>
+          <span>→</span>
+        </a>`;
     }).join("");
 
   } catch (error) {
-    console.error("MUBIKISHORE CMS:", error);
-
-    list.innerHTML = '<div class="row"><span class="meta">!</span><span class="title">Unable to load projects.</span><span class="meta date"></span><span>—</span></div>';
+    console.error("MUBIKISHORE project loading error:", error);
+    showError(error.message || "An unknown error occurred.");
   }
 })();
 </script>
