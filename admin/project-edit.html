@@ -1,17 +1,399 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Project — MUBIKISHORE</title><link rel="stylesheet" href="/admin/styles.css"></head><body><header class="top"><div class="logo">MUBIKISHORE</div><div class="top-right"><div class="admin-label">ADMIN / SITE CONTENT DASHBOARD</div><button class="logout" id="logout">SIGN OUT</button></div></header><div class="layout"><aside class="sidebar">
-<div class="section-label">CONTENT</div>
-<button class="nav-button" data-nav="dashboard">Dashboard</button>
-<button class="nav-button" data-nav="projects">Projects</button>
-<button class="nav-button" data-nav="project-edit">Add Project</button>
-<div class="section-label">STORE</div>
-<button class="nav-button" data-nav="store">Products</button>
-<div class="section-label">OTHER</div>
-<button class="nav-button" data-nav="other">Other Content</button>
-<div class="section-label">SYSTEM</div>
-<button class="nav-button" data-nav="settings">Settings</button>
-</aside><main class="content"><div class="eyebrow">CONTENT / PROJECT</div><h1 id="heading">ADD PROJECT.</h1><div class="form"><div class="grid2"><div class="field"><label>TITLE</label><input id="title"></div><div class="field"><label>SLUG</label><input id="slug"></div></div><div class="grid2"><div class="field"><label>DATE</label><input id="date" type="date"></div><div class="field"><label>YEAR</label><input id="year" type="number"></div></div><div class="field"><label>ROLE</label><input id="role"></div><div class="field"><label>DESCRIPTION</label><textarea id="description"></textarea></div><div class="grid2"><div class="field"><label>HERO IMAGE</label><input id="heroFile" type="file" accept="image/*"></div><div class="field"><label>VIDEO URL</label><input id="video"></div></div><div class="field"><label>CREDITS</label><textarea id="credits"></textarea></div><div class="field"><label>GALLERY</label><input id="galleryFiles" type="file" accept="image/*" multiple></div><div class="field"><label>STATUS</label><label><input id="published" type="checkbox" checked> Published</label></div><button id="save" class="btn primary">SAVE PROJECT</button><button class="btn" onclick="location.href='/admin/projects.html'">CANCEL</button><div id="msg" class="notice" style="display:none"></div></div></main></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/admin/config.js"></script><script src="/admin/app.js"></script><script>
-let id=new URLSearchParams(location.search).get("id"),hero="",gallery=[];
-async function upload(f){const path="projects/"+crypto.randomUUID()+"."+f.name.split(".").pop();const r=await MUBI_SUPABASE.storage.from(MUBI_CONFIG.MEDIA_BUCKET).upload(path,f);if(r.error)throw r.error;return MUBI_SUPABASE.storage.from(MUBI_CONFIG.MEDIA_BUCKET).getPublicUrl(path).data.publicUrl}
-window.addEventListener("load",async()=>{if(!id)return;heading.textContent="EDIT PROJECT.";const r=await MUBI_SUPABASE.from("projects").select("*").eq("id",id).single();if(r.error){alert(r.error.message);return}const p=r.data;["title","slug","date","year","role","description","video","credits"].forEach(k=>document.getElementById(k).value=p[k]??"");published.checked=p.published!==false;hero=p.hero||"";gallery=p.gallery||[]});
-save.onclick=async()=>{msg.style.display="block";msg.textContent="Saving...";try{if(!title.value.trim())throw Error("Title is required.");if(!slug.value.trim())slug.value=title.value.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");const hf=heroFile.files[0];if(hf)hero=await upload(hf);const gf=[...galleryFiles.files];if(gf.length){const urls=await Promise.all(gf.map(upload));gallery=[...gallery,...urls.map(x=>({image:x}))]}const payload={title:title.value.trim(),slug:slug.value.trim(),date:date.value||null,year:Number(year.value)||null,role:role.value.trim(),hero,video:video.value.trim(),description:description.value.trim(),credits:credits.value.trim(),gallery,published:published.checked};const r=id?await MUBI_SUPABASE.from("projects").update(payload).eq("id",id):await MUBI_SUPABASE.from("projects").insert(payload);if(r.error)throw r.error;location.href="/admin/projects.html"}catch(e){msg.textContent=e.message}};
-</script></body></html>
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project — MUBIKISHORE</title>
+<link rel="stylesheet" href="/admin/styles.css">
+<style>
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+.image-card {
+  border: 1px solid #444;
+  padding: 10px;
+  min-width: 0;
+}
+.image-card img {
+  display: block;
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  background: #222;
+}
+.image-card p {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  color: #aaa;
+}
+.image-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+.remove-image {
+  background: #642d2d;
+  color: white;
+  border: 0;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.preview-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  margin-top: 18px;
+  color: #aaa;
+}
+.help-text {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="logo">MUBIKISHORE</div>
+  <div class="top-right">
+    <div class="admin-label">ADMIN / SITE CONTENT DASHBOARD</div>
+    <button class="logout" id="logout">SIGN OUT</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="section-label">CONTENT</div>
+    <button class="nav-button" data-nav="dashboard">Dashboard</button>
+    <button class="nav-button" data-nav="projects">Projects</button>
+    <button class="nav-button" data-nav="project-edit">Add Project</button>
+    <div class="section-label">STORE</div>
+    <button class="nav-button" data-nav="store">Products</button>
+    <div class="section-label">OTHER</div>
+    <button class="nav-button" data-nav="other">Other Content</button>
+    <div class="section-label">SYSTEM</div>
+    <button class="nav-button" data-nav="settings">Settings</button>
+  </aside>
+
+  <main class="content">
+    <div class="eyebrow">CONTENT / PROJECT</div>
+    <h1 id="heading">ADD PROJECT.</h1>
+
+    <div class="form">
+      <div class="grid2">
+        <div class="field">
+          <label for="title">TITLE</label>
+          <input id="title">
+        </div>
+        <div class="field">
+          <label for="slug">SLUG</label>
+          <input id="slug">
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="date">DATE</label>
+          <input id="date" type="date">
+        </div>
+        <div class="field">
+          <label for="year">YEAR</label>
+          <input id="year" type="number">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="role">ROLE</label>
+        <input id="role">
+      </div>
+
+      <div class="field">
+        <label for="description">DESCRIPTION</label>
+        <textarea id="description"></textarea>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="heroFile">HERO IMAGE</label>
+          <input id="heroFile" type="file" accept="image/*">
+          <p class="help-text">Upload a new image to replace the current one.</p>
+          <div id="heroPreview"></div>
+        </div>
+        <div class="field">
+          <label for="video">VIDEO URL</label>
+          <input id="video">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="credits">CREDITS</label>
+        <textarea id="credits"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="galleryFiles">GALLERY</label>
+        <input id="galleryFiles" type="file" accept="image/*" multiple>
+        <p class="help-text">Add images or remove existing gallery images below.</p>
+        <div id="galleryPreview" class="image-preview-grid"></div>
+      </div>
+
+      <div class="field">
+        <label>STATUS</label>
+        <label><input id="published" type="checkbox" checked> Published</label>
+      </div>
+
+      <button id="save" class="btn primary">SAVE PROJECT</button>
+      <button class="btn" id="cancel">CANCEL</button>
+      <div id="msg" class="notice" style="display:none"></div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/admin/config.js"></script>
+<script src="/admin/app.js"></script>
+
+<script>
+const projectId = new URLSearchParams(location.search).get("id");
+
+let hero = "";
+let gallery = [];
+
+const el = (id) => document.getElementById(id);
+
+function showMessage(message) {
+  el("msg").style.display = "block";
+  el("msg").textContent = message;
+}
+
+function normalizeGallery(value) {
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return [];
+    }
+  }
+
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map(item => {
+      if (typeof item === "string") return { image: item };
+      if (item && typeof item.image === "string") return { ...item };
+      if (item && typeof item.url === "string") {
+        return { ...item, image: item.url };
+      }
+      return null;
+    })
+    .filter(item => item && item.image);
+}
+
+function createImageCard(url, label, onRemove) {
+  const card = document.createElement("div");
+  card.className = "image-card";
+
+  const img = document.createElement("img");
+  img.src = url;
+  img.alt = label;
+  img.onerror = () => {
+    img.alt = "Image preview unavailable";
+    img.style.display = "none";
+  };
+
+  const name = document.createElement("p");
+  name.textContent = label;
+
+  const actions = document.createElement("div");
+  actions.className = "image-actions";
+
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "remove-image";
+  remove.textContent = "REMOVE IMAGE";
+  remove.addEventListener("click", onRemove);
+
+  actions.appendChild(remove);
+  card.append(img, name, actions);
+
+  return card;
+}
+
+function renderHero() {
+  const container = el("heroPreview");
+  container.replaceChildren();
+
+  if (!hero) {
+    container.textContent = "No hero image saved.";
+    container.className = "help-text";
+    return;
+  }
+
+  container.className = "";
+  const label = document.createElement("div");
+  label.className = "preview-label";
+  label.textContent = "CURRENT HERO IMAGE";
+
+  container.append(
+    label,
+    createImageCard(hero, "Current hero image", () => {
+      hero = "";
+      el("heroFile").value = "";
+      renderHero();
+    })
+  );
+}
+
+function renderGallery() {
+  const container = el("galleryPreview");
+  container.replaceChildren();
+
+  if (!gallery.length) {
+    container.textContent = "No gallery images saved.";
+    container.className = "help-text";
+    return;
+  }
+
+  container.className = "image-preview-grid";
+
+  gallery.forEach((item, index) => {
+    container.appendChild(
+      createImageCard(item.image, "Gallery image " + (index + 1), () => {
+        gallery.splice(index, 1);
+        renderGallery();
+      })
+    );
+  });
+}
+
+async function upload(file) {
+  const extension = file.name.includes(".")
+    ? file.name.split(".").pop().toLowerCase()
+    : "jpg";
+
+  const path = "projects/" + crypto.randomUUID() + "." + extension;
+
+  const result = await MUBI_SUPABASE
+    .storage
+    .from(MUBI_CONFIG.MEDIA_BUCKET)
+    .upload(path, file);
+
+  if (result.error) throw result.error;
+
+  return MUBI_SUPABASE
+    .storage
+    .from(MUBI_CONFIG.MEDIA_BUCKET)
+    .getPublicUrl(path).data.publicUrl;
+}
+
+async function loadProject() {
+  if (!projectId) {
+    renderHero();
+    renderGallery();
+    return;
+  }
+
+  el("heading").textContent = "EDIT PROJECT.";
+
+  const result = await MUBI_SUPABASE
+    .from("projects")
+    .select("*")
+    .eq("id", projectId)
+    .single();
+
+  if (result.error) {
+    showMessage("Could not load project: " + result.error.message);
+    return;
+  }
+
+  const project = result.data;
+
+  ["title", "slug", "date", "year", "role",
+   "description", "video", "credits"].forEach(key => {
+    el(key).value = project[key] ?? "";
+  });
+
+  el("published").checked = project.published !== false;
+
+  hero = project.hero || "";
+  gallery = normalizeGallery(project.gallery);
+
+  renderHero();
+  renderGallery();
+}
+
+el("cancel").addEventListener("click", () => {
+  location.href = "/admin/projects.html";
+});
+
+el("save").addEventListener("click", async () => {
+  const saveButton = el("save");
+  saveButton.disabled = true;
+  showMessage("Saving project...");
+
+  try {
+    if (!el("title").value.trim()) {
+      throw new Error("Title is required.");
+    }
+
+    if (!el("slug").value.trim()) {
+      el("slug").value = el("title").value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    }
+
+    const heroFile = el("heroFile").files[0];
+    if (heroFile) {
+      hero = await upload(heroFile);
+    }
+
+    const galleryFiles = [...el("galleryFiles").files];
+
+    for (const file of galleryFiles) {
+      const url = await upload(file);
+      gallery.push({ image: url });
+    }
+
+    const payload = {
+      title: el("title").value.trim(),
+      slug: el("slug").value.trim(),
+      date: el("date").value || null,
+      year: Number(el("year").value) || null,
+      role: el("role").value.trim(),
+      hero,
+      video: el("video").value.trim(),
+      description: el("description").value.trim(),
+      credits: el("credits").value.trim(),
+      gallery,
+      published: el("published").checked
+    };
+
+    const result = projectId
+      ? await MUBI_SUPABASE.from("projects")
+          .update(payload).eq("id", projectId)
+      : await MUBI_SUPABASE.from("projects").insert(payload);
+
+    if (result.error) throw result.error;
+
+    showMessage("Saved successfully. Returning to projects...");
+
+    setTimeout(() => {
+      location.href = "/admin/projects.html";
+    }, 700);
+
+  } catch (error) {
+    showMessage("Save failed: " + error.message);
+    saveButton.disabled = false;
+  }
+});
+
+window.addEventListener("load", loadProject);
+</script>
+</body>
+</html>
