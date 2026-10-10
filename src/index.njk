@@ -86,12 +86,20 @@ layout: base.njk
 </footer>
 
 <style>
-  /* HERO VIDEO: full background behind the title */
+  /* HERO: VIDEO BACKGROUND */
+  .hero {
+    min-height: auto;
+    padding-top: 100px;
+    padding-bottom: 16px;
+  }
+
   .hero-box {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    min-height: 75vh;
+    height: 62vh;
+    min-height: 420px;
+    max-height: 720px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -132,13 +140,13 @@ layout: base.njk
     position: relative;
     z-index: 1;
     width: 100%;
-    padding: 55px 16px;
+    padding: 45px 16px;
     text-align: center;
     pointer-events: none;
   }
 
   .hero-copy .eyebrow {
-    margin-bottom: 45px;
+    margin-bottom: 38px;
     color: #f1f0ec;
     text-shadow: 0 1px 12px rgba(0, 0, 0, .45);
   }
@@ -154,21 +162,31 @@ layout: base.njk
   }
 
   .hero-meta {
+    display: flex;
+    justify-content: space-between;
     gap: 12px;
+    padding-top: 12px;
   }
 
-  /* Responsive adjustments */
+  /* RESPONSIVE */
   @media (max-width: 700px) {
+    .hero {
+      padding-top: 82px;
+      padding-bottom: 12px;
+    }
+
     .hero-box {
-      min-height: 70vh;
+      height: 58vh;
+      min-height: 360px;
+      max-height: 600px;
     }
 
     .hero-copy {
-      padding: 40px 10px;
+      padding: 35px 10px;
     }
 
     .hero-copy .eyebrow {
-      margin-bottom: 35px;
+      margin-bottom: 30px;
       font-size: 10px;
     }
 
@@ -178,6 +196,18 @@ layout: base.njk
 
     .hero-meta {
       font-size: 9px;
+      gap: 6px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .hero-box {
+      height: 55vh;
+      min-height: 320px;
+    }
+
+    .hero-meta {
+      font-size: 8px;
     }
   }
 </style>
@@ -198,9 +228,13 @@ layout: base.njk
 
   function safeUrl(value) {
     if (!value) return "";
+
     try {
       const url = new URL(value, location.origin);
-      return ["https:", "http:"].includes(url.protocol) ? url.href : "";
+
+      return ["https:", "http:"].includes(url.protocol)
+        ? url.href
+        : "";
     } catch {
       return "";
     }
@@ -208,16 +242,21 @@ layout: base.njk
 
   function showSectionError(id, message) {
     const element = document.getElementById(id);
+
     if (element) {
-      element.innerHTML = `<p class="meta">${escapeHtml(message)}</p>`;
+      element.innerHTML =
+        `<p class="meta">${escapeHtml(message)}</p>`;
     }
   }
 
   if (!db) {
-    document.getElementById("project-count").textContent = "Database unavailable";
+    document.getElementById("project-count").textContent =
+      "Database unavailable";
+
     showSectionError("cms-projects", "Could not connect to the content database.");
     showSectionError("cms-products", "Could not connect to the content database.");
     showSectionError("cms-other", "Could not connect to the content database.");
+
     return;
   }
 
@@ -232,17 +271,19 @@ layout: base.njk
     if (error) throw error;
 
     const projects = data || [];
+
     document.getElementById("project-count").textContent =
       `${projects.length} projects`;
 
     document.getElementById("cms-projects").innerHTML = projects.length
       ? projects.map(project => {
           const date = project.date
-            ? new Date(project.date + "T00:00:00").toLocaleDateString("en-GB", {
-                day: "numeric",
-                month: "long",
-                year: "numeric"
-              })
+            ? new Date(project.date + "T00:00:00")
+                .toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric"
+                })
             : "";
 
           return `
@@ -256,11 +297,16 @@ layout: base.njk
       : `<div class="row">
           <span class="meta">—</span>
           <span class="title">No published projects yet.</span>
-          <span></span><span>→</span>
+          <span></span>
+          <span>→</span>
         </div>`;
+
   } catch (error) {
     console.error("Projects:", error);
-    document.getElementById("project-count").textContent = "Projects unavailable";
+
+    document.getElementById("project-count").textContent =
+      "Projects unavailable";
+
     showSectionError("cms-projects", "Could not load projects.");
   }
 
@@ -285,27 +331,38 @@ layout: base.njk
           const content = `
             <div class="product-img">
               ${image
-                ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.title || "")}" loading="lazy">`
+                ? `<img src="${escapeHtml(image)}"
+                    alt="${escapeHtml(product.title || "")}"
+                    loading="lazy">`
                 : `<span class="ph">[ product image ]</span>`}
             </div>
+
             <div class="product-info">
               <div class="title">${escapeHtml(product.title || "Untitled product")}</div>
+
               ${product.description
                 ? `<p class="meta">${escapeHtml(product.description)}</p>`
                 : ""}
+
               ${product.price
                 ? `<div class="meta">${escapeHtml(product.price)}</div>`
                 : ""}
-              ${link ? `<span class="product-link-label">View item ↗</span>` : ""}
+
+              ${link
+                ? `<span class="product-link-label">View item ↗</span>`
+                : ""}
             </div>`;
 
           return link
-            ? `<a class="product" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${content}</a>`
+            ? `<a class="product" href="${escapeHtml(link)}"
+                  target="_blank" rel="noopener noreferrer">${content}</a>`
             : `<article class="product">${content}</article>`;
         }).join("")
       : '<p class="meta">No published products yet.</p>';
+
   } catch (error) {
     console.error("Products:", error);
+
     showSectionError("cms-products", "Products could not be loaded.");
   }
 
@@ -329,20 +386,31 @@ layout: base.njk
 
           const content = `
             ${image
-              ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(item.title || "")}" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
+              ? `<img src="${escapeHtml(image)}"
+                  alt="${escapeHtml(item.title || "")}"
+                  loading="lazy"
+                  style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
               : `<span class="ph">${escapeHtml(item.type || "Photography")}</span>`}
+
             <div style="position:absolute;left:0;right:0;bottom:0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,.8));color:white">
               <div>${escapeHtml(item.title || "")}</div>
-              ${item.caption ? `<div class="meta">${escapeHtml(item.caption)}</div>` : ""}
+              ${item.caption
+                ? `<div class="meta">${escapeHtml(item.caption)}</div>`
+                : ""}
             </div>`;
 
           return link
-            ? `<a class="tile" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" style="position:relative;overflow:hidden">${content}</a>`
-            : `<article class="tile" style="position:relative;overflow:hidden">${content}</article>`;
+            ? `<a class="tile" href="${escapeHtml(link)}"
+                  target="_blank" rel="noopener noreferrer"
+                  style="position:relative;overflow:hidden">${content}</a>`
+            : `<article class="tile"
+                  style="position:relative;overflow:hidden">${content}</article>`;
         }).join("")
       : '<p class="meta">No published content yet.</p>';
+
   } catch (error) {
     console.error("Other content:", error);
+
     showSectionError("cms-other", "Other content could not be loaded.");
   }
 
@@ -362,9 +430,12 @@ layout: base.njk
     if (settings && settings.hero_video && hero) {
       const videoUrl = safeUrl(settings.hero_video);
 
-      if (!videoUrl) throw new Error("The hero video URL is invalid.");
+      if (!videoUrl) {
+        throw new Error("The hero video URL is invalid.");
+      }
 
       const video = document.createElement("video");
+
       video.src = videoUrl;
       video.autoplay = settings.hero_autoplay !== false;
       video.muted = settings.hero_muted !== false;
@@ -374,7 +445,10 @@ layout: base.njk
       video.preload = "metadata";
 
       const posterUrl = safeUrl(settings.hero_poster);
-      if (posterUrl) video.poster = posterUrl;
+
+      if (posterUrl) {
+        video.poster = posterUrl;
+      }
 
       hero.replaceChildren(video);
 
