@@ -258,8 +258,7 @@ layout: base.njk
       '<p class="meta">Other content could not be loaded.</p>';
   }
 })();
-</script>
-  // HERO REEL
+// HERO REEL
   try {
     const { data, error } = await db
       .from("site_settings")
@@ -295,3 +294,6 @@ layout: base.njk
   } catch (error) {
     console.error("Hero reel:", error);
   }
+
+</script>
+  
