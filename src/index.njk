@@ -4,13 +4,15 @@ layout: base.njk
 ---
 
 <section class="hero">
-  <div class="hero-box">
+  <div class="hero-box" id="hero-box">
+    <div class="hero-video-layer" id="hero-media">
+      <span class="ph">[ hero still / reel ]</span>
+    </div>
+    <div class="hero-overlay"></div>
+
     <div class="hero-copy">
       <div class="eyebrow">{{site.tagline}}</div>
       <h1>MUBI<br>KISHORE</h1>
-      <div class="hero-media" id="hero-media">
-        <span class="ph">[ hero still / reel ]</span>
-      </div>
     </div>
   </div>
 
@@ -26,7 +28,9 @@ layout: base.njk
     <span>01 / Selected Work</span>
     <span id="project-count">Loading…</span>
   </div>
+
   <p class="intro">Films, collaborations, experiments and things made along the way.</p>
+
   <div class="work" id="cms-projects">
     <div class="row">
       <span class="meta">—</span>
@@ -42,6 +46,7 @@ layout: base.njk
     <span>02 / Store</span>
     <span>Objects / prints / editions</span>
   </div>
+
   <div class="grid store" id="cms-products">
     <p class="meta">Loading products…</p>
   </div>
@@ -52,6 +57,7 @@ layout: base.njk
     <span>03 / Other Things</span>
     <span>35mm / BTS / photography / tests</span>
   </div>
+
   <div class="grid" id="cms-other">
     <p class="meta">Loading other content…</p>
   </div>
@@ -62,6 +68,7 @@ layout: base.njk
     <span>04 / About</span>
     <span>Words later</span>
   </div>
+
   <div class="about">
     <div class="about-copy">{{site.about}}</div>
     <div class="about-side">
@@ -77,6 +84,103 @@ layout: base.njk
   <span>MUBIKISHORE</span>
   <span>© 2026</span>
 </footer>
+
+<style>
+  /* HERO VIDEO: full background behind the title */
+  .hero-box {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #111;
+  }
+
+  .hero-video-layer {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+    background: radial-gradient(circle, #292929, #0a0a0a);
+  }
+
+  .hero-video-layer video,
+  .hero-video-layer img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, .18) 0%,
+      rgba(0, 0, 0, .08) 45%,
+      rgba(0, 0, 0, .38) 100%
+    );
+  }
+
+  .hero-copy {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    padding: 55px 16px;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .hero-copy .eyebrow {
+    margin-bottom: 45px;
+    color: #f1f0ec;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, .45);
+  }
+
+  .hero-copy h1 {
+    margin: 0;
+    color: #f1f0ec;
+    font-size: clamp(64px, 12vw, 160px);
+    line-height: .78;
+    letter-spacing: -.085em;
+    font-weight: 500;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, .16);
+  }
+
+  .hero-meta {
+    gap: 12px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 700px) {
+    .hero-box {
+      min-height: 70vh;
+    }
+
+    .hero-copy {
+      padding: 40px 10px;
+    }
+
+    .hero-copy .eyebrow {
+      margin-bottom: 35px;
+      font-size: 10px;
+    }
+
+    .hero-copy h1 {
+      font-size: clamp(56px, 13vw, 100px);
+    }
+
+    .hero-meta {
+      font-size: 9px;
+    }
+  }
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/admin/config.js"></script>
@@ -96,9 +200,7 @@ layout: base.njk
     if (!value) return "";
     try {
       const url = new URL(value, location.origin);
-      return ["https:", "http:"].includes(url.protocol)
-        ? url.href
-        : "";
+      return ["https:", "http:"].includes(url.protocol) ? url.href : "";
     } catch {
       return "";
     }
@@ -107,14 +209,12 @@ layout: base.njk
   function showSectionError(id, message) {
     const element = document.getElementById(id);
     if (element) {
-      element.innerHTML =
-        `<p class="meta">${escapeHtml(message)}</p>`;
+      element.innerHTML = `<p class="meta">${escapeHtml(message)}</p>`;
     }
   }
 
   if (!db) {
-    document.getElementById("project-count").textContent =
-      "Database unavailable";
+    document.getElementById("project-count").textContent = "Database unavailable";
     showSectionError("cms-projects", "Could not connect to the content database.");
     showSectionError("cms-products", "Could not connect to the content database.");
     showSectionError("cms-other", "Could not connect to the content database.");
@@ -138,12 +238,11 @@ layout: base.njk
     document.getElementById("cms-projects").innerHTML = projects.length
       ? projects.map(project => {
           const date = project.date
-            ? new Date(project.date + "T00:00:00")
-                .toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric"
-                })
+            ? new Date(project.date + "T00:00:00").toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+              })
             : "";
 
           return `
@@ -157,17 +256,12 @@ layout: base.njk
       : `<div class="row">
           <span class="meta">—</span>
           <span class="title">No published projects yet.</span>
-          <span></span>
-          <span>→</span>
+          <span></span><span>→</span>
         </div>`;
   } catch (error) {
     console.error("Projects:", error);
-    document.getElementById("project-count").textContent =
-      "Projects unavailable";
-    showSectionError(
-      "cms-projects",
-      "Could not load projects: " + (error.message || "Unknown error")
-    );
+    document.getElementById("project-count").textContent = "Projects unavailable";
+    showSectionError("cms-projects", "Could not load projects.");
   }
 
   // STORE PRODUCTS
@@ -191,9 +285,7 @@ layout: base.njk
           const content = `
             <div class="product-img">
               ${image
-                ? `<img src="${escapeHtml(image)}"
-                    alt="${escapeHtml(product.title || "")}"
-                    loading="lazy">`
+                ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.title || "")}" loading="lazy">`
                 : `<span class="ph">[ product image ]</span>`}
             </div>
             <div class="product-info">
@@ -204,26 +296,17 @@ layout: base.njk
               ${product.price
                 ? `<div class="meta">${escapeHtml(product.price)}</div>`
                 : ""}
-              ${link
-                ? `<span class="product-link-label">View item ↗</span>`
-                : ""}
+              ${link ? `<span class="product-link-label">View item ↗</span>` : ""}
             </div>`;
 
           return link
-            ? `<a class="product" href="${escapeHtml(link)}"
-                  target="_blank" rel="noopener noreferrer">
-                  ${content}
-                </a>`
+            ? `<a class="product" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${content}</a>`
             : `<article class="product">${content}</article>`;
         }).join("")
       : '<p class="meta">No published products yet.</p>';
-
   } catch (error) {
     console.error("Products:", error);
-    showSectionError(
-      "cms-products",
-      "Could not load products: " + (error.message || "Unknown error")
-    );
+    showSectionError("cms-products", "Products could not be loaded.");
   }
 
   // OTHER CONTENT
@@ -246,37 +329,21 @@ layout: base.njk
 
           const content = `
             ${image
-              ? `<img src="${escapeHtml(image)}"
-                  alt="${escapeHtml(item.title || "")}"
-                  loading="lazy"
-                  style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
+              ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(item.title || "")}" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
               : `<span class="ph">${escapeHtml(item.type || "Photography")}</span>`}
             <div style="position:absolute;left:0;right:0;bottom:0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,.8));color:white">
               <div>${escapeHtml(item.title || "")}</div>
-              ${item.caption
-                ? `<div class="meta">${escapeHtml(item.caption)}</div>`
-                : ""}
+              ${item.caption ? `<div class="meta">${escapeHtml(item.caption)}</div>` : ""}
             </div>`;
 
           return link
-            ? `<a class="tile" href="${escapeHtml(link)}"
-                  target="_blank" rel="noopener noreferrer"
-                  style="position:relative;overflow:hidden">
-                  ${content}
-                </a>`
-            : `<article class="tile"
-                  style="position:relative;overflow:hidden">
-                  ${content}
-                </article>`;
+            ? `<a class="tile" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" style="position:relative;overflow:hidden">${content}</a>`
+            : `<article class="tile" style="position:relative;overflow:hidden">${content}</article>`;
         }).join("")
       : '<p class="meta">No published content yet.</p>';
-
   } catch (error) {
     console.error("Other content:", error);
-    showSectionError(
-      "cms-other",
-      "Could not load other content: " + (error.message || "Unknown error")
-    );
+    showSectionError("cms-other", "Other content could not be loaded.");
   }
 
   // HOMEPAGE HERO REEL
@@ -293,9 +360,12 @@ layout: base.njk
     const hero = document.getElementById("hero-media");
 
     if (settings && settings.hero_video && hero) {
-      const video = document.createElement("video");
+      const videoUrl = safeUrl(settings.hero_video);
 
-      video.src = settings.hero_video;
+      if (!videoUrl) throw new Error("The hero video URL is invalid.");
+
+      const video = document.createElement("video");
+      video.src = videoUrl;
       video.autoplay = settings.hero_autoplay !== false;
       video.muted = settings.hero_muted !== false;
       video.loop = settings.hero_loop !== false;
@@ -303,15 +373,10 @@ layout: base.njk
       video.controls = false;
       video.preload = "metadata";
 
-      if (settings.hero_poster) {
-        video.poster = settings.hero_poster;
-      }
+      const posterUrl = safeUrl(settings.hero_poster);
+      if (posterUrl) video.poster = posterUrl;
 
-      video.style.cssText =
-        "width:100%;height:100%;object-fit:cover;display:block";
-
-      hero.innerHTML = "";
-      hero.appendChild(video);
+      hero.replaceChildren(video);
 
       if (video.autoplay) {
         video.play().catch(error => {
