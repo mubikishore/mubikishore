@@ -1,18 +1,20 @@
+
 ---
 title: MUBIKISHORE
 layout: base.njk
 ---
+
 <section class="hero">
   <div class="hero-box">
     <div class="hero-copy">
       <div class="eyebrow">{{site.tagline}}</div>
       <h1>MUBI<br>KISHORE</h1>
       <div class="hero-media" id="hero-media">
-  <span class="ph">[ hero still / reel ]</span>
-</div>
+        <span class="ph">[ hero still / reel ]</span>
       </div>
     </div>
   </div>
+
   <div class="hero-meta meta">
     <span>{{site.location}}</span>
     <span>Selected works · 2024—2026</span>
@@ -91,32 +93,32 @@ layout: base.njk
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-  function safeImage(value) {
+  function safeUrl(value) {
     if (!value) return "";
     try {
       const url = new URL(value, location.origin);
-      return ["https:", "http:"].includes(url.protocol) ? url.href : "";
+      return ["https:", "http:"].includes(url.protocol)
+        ? url.href
+        : "";
     } catch {
       return "";
     }
   }
 
-  function safeLink(value) {
-    if (!value) return "";
-    try {
-      const url = new URL(value, location.origin);
-      return ["https:", "http:"].includes(url.protocol) ? url.href : "";
-    } catch {
-      return "";
+  function showSectionError(id, message) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.innerHTML =
+        `<p class="meta">${escapeHtml(message)}</p>`;
     }
   }
 
   if (!db) {
-    document.getElementById("project-count").textContent = "Content unavailable";
-    document.getElementById("cms-projects").innerHTML =
-      '<p class="meta">Unable to connect to the content database.</p>';
-    document.getElementById("cms-products").innerHTML = "";
-    document.getElementById("cms-other").innerHTML = "";
+    document.getElementById("project-count").textContent =
+      "Database unavailable";
+    showSectionError("cms-projects", "Could not connect to the content database.");
+    showSectionError("cms-products", "Could not connect to the content database.");
+    showSectionError("cms-other", "Could not connect to the content database.");
     return;
   }
 
@@ -137,11 +139,12 @@ layout: base.njk
     document.getElementById("cms-projects").innerHTML = projects.length
       ? projects.map(project => {
           const date = project.date
-            ? new Date(project.date + "T00:00:00").toLocaleDateString("en-GB", {
-                day: "numeric",
-                month: "long",
-                year: "numeric"
-              })
+            ? new Date(project.date + "T00:00:00")
+                .toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric"
+                })
             : "";
 
           return `
@@ -155,20 +158,24 @@ layout: base.njk
       : `<div class="row">
           <span class="meta">—</span>
           <span class="title">No published projects yet.</span>
-          <span></span><span>→</span>
+          <span></span>
+          <span>→</span>
         </div>`;
   } catch (error) {
     console.error("Projects:", error);
-    document.getElementById("project-count").textContent = "Projects unavailable";
-    document.getElementById("cms-projects").innerHTML =
-      '<p class="meta">Could not load projects.</p>';
+    document.getElementById("project-count").textContent =
+      "Projects unavailable";
+    showSectionError(
+      "cms-projects",
+      "Could not load projects: " + (error.message || "Unknown error")
+    );
   }
 
-  // STORE PRODUCTS — CLICKABLE WHEN A LINK IS PROVIDED
+  // STORE PRODUCTS
   try {
     const { data, error } = await db
       .from("products")
-      .select("id, title, slug, price, description, image, link_url, published, created_at")
+      .select("*")
       .eq("published", true)
       .order("created_at", { ascending: false });
 
@@ -179,49 +186,52 @@ layout: base.njk
 
     container.innerHTML = products.length
       ? products.map(product => {
-          const image = safeImage(product.image);
-          const link = safeLink(product.link_url);
+          const image = safeUrl(product.image);
+          const link = safeUrl(product.link_url);
 
-          const cardContent = `
+          const content = `
             <div class="product-img">
               ${image
                 ? `<img src="${escapeHtml(image)}"
-                    alt="${escapeHtml(product.title)}"
-                    loading="lazy"
-                    style="width:100%;height:100%;object-fit:cover;display:block">`
-                : '<span class="ph">[ product image ]</span>'}
+                    alt="${escapeHtml(product.title || "")}"
+                    loading="lazy">`
+                : `<span class="ph">[ product image ]</span>`}
             </div>
             <div class="product-info">
               <div class="title">${escapeHtml(product.title || "Untitled product")}</div>
               ${product.description
                 ? `<p class="meta">${escapeHtml(product.description)}</p>`
                 : ""}
-              <div class="meta">${product.price
-                ? `₹ ${escapeHtml(product.price)}`
-                : ""}</div>
+              ${product.price
+                ? `<div class="meta">${escapeHtml(product.price)}</div>`
+                : ""}
+              ${link
+                ? `<span class="product-link-label">View item ↗</span>`
+                : ""}
             </div>`;
 
           return link
             ? `<a class="product" href="${escapeHtml(link)}"
-                  target="_blank" rel="noopener noreferrer"
-                  aria-label="View ${escapeHtml(product.title)}">
-                 ${cardContent}
-               </a>`
-            : `<article class="product">${cardContent}</article>`;
+                  target="_blank" rel="noopener noreferrer">
+                  ${content}
+                </a>`
+            : `<article class="product">${content}</article>`;
         }).join("")
       : '<p class="meta">No published products yet.</p>';
 
   } catch (error) {
     console.error("Products:", error);
-    document.getElementById("cms-products").innerHTML =
-      '<p class="meta">Products could not be loaded.</p>';
+    showSectionError(
+      "cms-products",
+      "Could not load products: " + (error.message || "Unknown error")
+    );
   }
 
   // OTHER CONTENT
   try {
     const { data, error } = await db
       .from("other_content")
-      .select("id, title, type, caption, image, published, created_at")
+      .select("*")
       .eq("published", true)
       .order("created_at", { ascending: false });
 
@@ -232,32 +242,45 @@ layout: base.njk
 
     container.innerHTML = items.length
       ? items.map(item => {
-          const image = safeImage(item.image);
+          const image = safeUrl(item.image);
+          const link = safeUrl(item.link_url);
 
-          return `
-            <article class="tile" style="position:relative;overflow:hidden">
-              ${image
-                ? `<img src="${escapeHtml(image)}"
-                    alt="${escapeHtml(item.title)}"
-                    loading="lazy"
-                    style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
-                : `<span class="ph">${escapeHtml(item.type || "Photography")}</span>`}
-              <div style="position:absolute;left:0;right:0;bottom:0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,.8));color:white">
-                <div>${escapeHtml(item.title)}</div>
-                ${item.caption
-                  ? `<div class="meta">${escapeHtml(item.caption)}</div>`
-                  : ""}
-              </div>
-            </article>`;
+          const content = `
+            ${image
+              ? `<img src="${escapeHtml(image)}"
+                  alt="${escapeHtml(item.title || "")}"
+                  loading="lazy"
+                  style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
+              : `<span class="ph">${escapeHtml(item.type || "Photography")}</span>`}
+            <div style="position:absolute;left:0;right:0;bottom:0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,.8));color:white">
+              <div>${escapeHtml(item.title || "")}</div>
+              ${item.caption
+                ? `<div class="meta">${escapeHtml(item.caption)}</div>`
+                : ""}
+            </div>`;
+
+          return link
+            ? `<a class="tile" href="${escapeHtml(link)}"
+                  target="_blank" rel="noopener noreferrer"
+                  style="position:relative;overflow:hidden">
+                  ${content}
+                </a>`
+            : `<article class="tile"
+                  style="position:relative;overflow:hidden">
+                  ${content}
+                </article>`;
         }).join("")
       : '<p class="meta">No published content yet.</p>';
 
   } catch (error) {
     console.error("Other content:", error);
-    document.getElementById("cms-other").innerHTML =
-      '<p class="meta">Other content could not be loaded.</p>';
+    showSectionError(
+      "cms-other",
+      "Could not load other content: " + (error.message || "Unknown error")
+    );
   }
-// HERO REEL
+
+  // HOMEPAGE HERO REEL
   try {
     const { data, error } = await db
       .from("site_settings")
@@ -272,6 +295,7 @@ layout: base.njk
 
     if (settings && settings.hero_video && hero) {
       const video = document.createElement("video");
+
       video.src = settings.hero_video;
       video.autoplay = settings.hero_autoplay !== false;
       video.muted = settings.hero_muted !== false;
@@ -285,14 +309,19 @@ layout: base.njk
       }
 
       video.style.cssText =
-        "width:100%;height:100%;object-fit:cover;display:block;";
+        "width:100%;height:100%;object-fit:cover;display:block";
 
       hero.innerHTML = "";
       hero.appendChild(video);
+
+      if (video.autoplay) {
+        video.play().catch(error => {
+          console.warn("Hero autoplay was blocked:", error);
+        });
+      }
     }
   } catch (error) {
     console.error("Hero reel:", error);
   }
 })();
 </script>
-  
