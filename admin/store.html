@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -49,7 +48,7 @@
 <main class="content">
   <div class="eyebrow">ADMIN / STORE</div>
   <h1>PRODUCTS.</h1>
-  <p class="intro">Manage store items, prints and editions.</p>
+  <p class="intro">Manage store items, prints, editions and product links.</p>
 
   <button class="btn primary" id="newProduct">+ ADD PRODUCT</button>
 
@@ -69,7 +68,11 @@
     <label for="description">DESCRIPTION</label>
     <textarea id="description" placeholder="Product details"></textarea>
 
-    <label for="imageFile">PRODUCT IMAGE</label>
+    <label for="linkUrl">PRODUCT LINK — WHERE SHOULD THE CARD GO?</label>
+    <input id="linkUrl" type="url" placeholder="https://your-store.com/product">
+    <p class="meta">Paste the full URL. The product card will open this link in a new tab.</p>
+
+    <label for="imageFile">UPLOAD PRODUCT IMAGE</label>
     <input id="imageFile" type="file" accept="image/*">
     <div id="imagePreview" style="margin-top:12px"></div>
     <label><input id="removeImage" type="checkbox" style="width:auto"> Remove current image</label>
@@ -103,22 +106,18 @@
   let products = [];
   let currentImage = "";
 
-  function message(text) { $("status").textContent = text; }
-  function escapeHTML(value="") {
-    return String(value).replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    })[c]);
+  function message(text) {
+    $("status").textContent = text;
   }
 
   function slugify(value) {
     return value.toLowerCase().trim()
-      .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   }
 
   function resetForm() {
     $("productForm").reset();
     $("productId").value = "";
-    $("imageUrl").value = "";
     $("imagePreview").replaceChildren();
     $("formHeading").textContent = "ADD PRODUCT";
     $("removeImage").checked = false;
@@ -126,13 +125,12 @@
     $("productForm").classList.add("hidden");
   }
 
-  function openForm(product=null) {
+  function openForm(product = null) {
     resetForm();
     $("productForm").classList.remove("hidden");
-    if (!product) {
-      $("formHeading").textContent = "ADD PRODUCT";
-      return;
-    }
+    $("productForm").scrollIntoView({behavior:"smooth",block:"start"});
+
+    if (!product) return;
 
     $("formHeading").textContent = "EDIT PRODUCT";
     $("productId").value = product.id;
@@ -140,6 +138,7 @@
     $("slug").value = product.slug || "";
     $("price").value = product.price ?? "";
     $("description").value = product.description || "";
+    $("linkUrl").value = product.link_url || "";
     $("published").value = String(product.published !== false);
     currentImage = product.image || product.image_url || "";
     $("imageUrl").value = currentImage;
@@ -157,14 +156,13 @@
     message("Loading products…");
     $("productList").replaceChildren();
 
-    // Supports the common table name used by this CMS.
-    // If your project uses a different schema, the error will be shown below.
-    const result = await MUBI_SUPABASE.from("products")
-      .select("*").order("created_at", {ascending:false});
+    const result = await MUBI_SUPABASE
+      .from("products")
+      .select("*")
+      .order("created_at", {ascending:false});
 
     if (result.error) {
-      message("Could not load products: " + result.error.message +
-        "\n\nThe products table may not exist yet. We'll set up the correct table if needed.");
+      message("Could not load products: " + result.error.message);
       return;
     }
 
@@ -172,24 +170,29 @@
     message(products.length + " product(s)");
 
     if (!products.length) {
-      $("productList").innerHTML = "<p>No products yet. Click ADD PRODUCT to create your first one.</p>";
+      $("productList").innerHTML =
+        "<p>No products yet. Click ADD PRODUCT to create your first one.</p>";
       return;
     }
 
     for (const p of products) {
       const card = document.createElement("article");
       card.className = "product-card";
-      const image = p.image || p.image_url || "";
+
       const img = document.createElement("img");
       img.alt = p.title || "Product";
-      if (image) img.src = image;
+      img.src = p.image || p.image_url || "";
 
       const details = document.createElement("div");
       const title = document.createElement("strong");
       title.textContent = p.title || "Untitled product";
+
       const info = document.createElement("p");
       info.textContent = (p.price || "No price") + " · " +
         (p.published === false ? "Hidden" : "Published");
+
+      const linkInfo = document.createElement("p");
+      linkInfo.textContent = p.link_url ? "Link: " + p.link_url : "No product link added";
 
       const actions = document.createElement("div");
       actions.className = "actions";
@@ -202,7 +205,7 @@
       visibility.textContent = p.published === false ? "PUBLISH" : "HIDE";
       visibility.onclick = async () => {
         const r = await MUBI_SUPABASE.from("products")
-          .update({published: p.published === false}).eq("id", p.id);
+          .update({published:p.published === false}).eq("id",p.id);
         if (r.error) return message("Visibility update failed: " + r.error.message);
         await loadProducts();
       };
@@ -211,14 +214,14 @@
       del.textContent = "DELETE";
       del.className = "danger";
       del.onclick = async () => {
-        if (!confirm('Delete "' + (p.title || "this product") + '"? This cannot be undone.')) return;
+        if (!confirm('Delete "' + (p.title || "this product") + '"?')) return;
         const r = await MUBI_SUPABASE.from("products").delete().eq("id",p.id);
         if (r.error) return message("Delete failed: " + r.error.message);
         await loadProducts();
       };
 
       actions.append(edit,visibility,del);
-      details.append(title,info,actions);
+      details.append(title,info,linkInfo,actions);
       card.append(img,details);
       $("productList").append(card);
     }
@@ -234,8 +237,10 @@
   $("imageFile").addEventListener("change", () => {
     const file = $("imageFile").files[0];
     if (!file) return;
+
     const url = URL.createObjectURL(file);
     $("imagePreview").replaceChildren();
+
     const img = document.createElement("img");
     img.src = url;
     img.alt = "New image preview";
@@ -255,24 +260,40 @@
 
   $("productForm").addEventListener("submit", async event => {
     event.preventDefault();
+
     const button = $("saveProduct");
     button.disabled = true;
     message("Saving product…");
 
     try {
       if (!window.MUBI_SUPABASE) throw new Error("Supabase client is not configured.");
+
       const title = $("title").value.trim();
       if (!title) throw new Error("Please enter a product title.");
 
-      let image = $("removeImage").checked ? "" : $("imageUrl").value.trim() || currentImage;
+      let image = $("removeImage").checked
+        ? ""
+        : $("imageUrl").value.trim() || currentImage;
+
       const file = $("imageFile").files[0];
 
       if (file) {
-        const extension = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
+        const extension = (file.name.split(".").pop() || "jpg")
+          .toLowerCase().replace(/[^a-z0-9]/g,"");
         const path = "products/" + crypto.randomUUID() + "." + extension;
-        const upload = await MUBI_SUPABASE.storage.from(MUBI_CONFIG.MEDIA_BUCKET).upload(path,file);
+
+        const upload = await MUBI_SUPABASE.storage
+          .from(MUBI_CONFIG.MEDIA_BUCKET).upload(path,file);
+
         if (upload.error) throw upload.error;
-        image = MUBI_SUPABASE.storage.from(MUBI_CONFIG.MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+
+        image = MUBI_SUPABASE.storage
+          .from(MUBI_CONFIG.MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+      }
+
+      const linkUrl = $("linkUrl").value.trim();
+      if (linkUrl && !/^https?:\/\//i.test(linkUrl)) {
+        throw new Error("Enter a full link beginning with https:// or http://");
       }
 
       const payload = {
@@ -281,6 +302,7 @@
         price: $("price").value.trim(),
         description: $("description").value.trim(),
         image,
+        link_url: linkUrl,
         published: $("published").value === "true"
       };
 
@@ -290,9 +312,11 @@
         : await MUBI_SUPABASE.from("products").insert(payload);
 
       if (result.error) throw result.error;
+
       resetForm();
       message("Product saved successfully.");
       await loadProducts();
+
     } catch (error) {
       message("Could not save product: " + (error.message || error));
     } finally {
