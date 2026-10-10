@@ -1,100 +1,18 @@
----
-title: MUBIKISHORE
-layout: base.njk
----
-<section class="hero">
-  <div class="hero-box">
-    <div class="hero-copy">
-      <div class="eyebrow">{{site.tagline}}</div>
-      <h1>MUBI<br>KISHORE</h1>
-      <div class="ph">[ replace with hero still / reel ]</div>
-    </div>
-  </div>
-  <div class="hero-meta meta">
-    <span>{{site.location}}</span>
-    <span>Selected works · 2024—2026</span>
-    <span>Scroll ↓</span>
-  </div>
-</section>
-
-<section class="section" id="work">
-  <div class="head">
-    <span>01 / Selected Work</span>
-    <span id="project-count">Loading…</span>
-  </div>
-  <p class="intro">Films, collaborations, experiments and things made along the way.</p>
-  <div class="work" id="cms-projects">
-    <div class="row">
-      <span class="meta">—</span>
-      <span class="title">Loading projects…</span>
-      <span class="meta date"></span>
-      <span>→</span>
-    </div>
-  </div>
-</section>
-
 <section class="section" id="store">
   <div class="head">
     <span>02 / Store</span>
     <span>Objects / prints / editions</span>
   </div>
-  <div class="grid store">
-    {% for p in collections.store %}
-    <div class="product">
-      <div class="product-img">
-        <span class="ph">[ product image ]</span>
-      </div>
-      <div class="product-info">
-        <div class="title">{{p.data.title}}</div>
-        <div class="meta">{{p.data.price}}</div>
-      </div>
-    </div>
-    {% endfor %}
+
+  <div class="grid store" id="cms-products">
+    <p class="meta">Loading products…</p>
   </div>
 </section>
-
-<section class="section" id="other">
-  <div class="head">
-    <span>03 / Other Things</span>
-    <span>35mm / BTS / photography / tests</span>
-  </div>
-  <div class="grid">
-    {% for p in collections.other %}
-    <div class="tile">
-      <span class="ph">[ {{p.data.type}} ]</span>
-    </div>
-    {% endfor %}
-  </div>
-</section>
-
-<section class="section" id="about">
-  <div class="head">
-    <span>04 / About</span>
-    <span>Words later</span>
-  </div>
-  <div class="about">
-    <div class="about-copy">{{site.about}}</div>
-    <div class="about-side">
-      {{site.location}}<br><br>
-      Available for films / collaborations / commercial work<br><br>
-      {{site.instagram}}<br>
-      {{site.email}}
-    </div>
-  </div>
-</section>
-
-<footer>
-  <span>MUBIKISHORE</span>
-  <span>© 2026</span>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/admin/config.js"></script>
 
 <script>
 (async function () {
-  const list = document.getElementById("cms-projects");
-  const count = document.getElementById("project-count");
+  const store = document.getElementById("cms-products");
+  if (!store || !window.MUBI_SUPABASE) return;
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -105,74 +23,44 @@ layout: base.njk
       .replaceAll("'", "&#039;");
   }
 
-  function showError(message) {
-    count.textContent = "Projects unavailable";
-    list.innerHTML = `
-      <div class="row">
-        <span class="meta">!</span>
-        <span class="title">Unable to load projects: ${escapeHtml(message)}</span>
-        <span class="meta date"></span>
-        <span>—</span>
-      </div>`;
-  }
-
   try {
-    if (!window.supabase) {
-      throw new Error("Supabase library did not load. Please try again later.");
-    }
-
-    if (!window.MUBI_SUPABASE) {
-      throw new Error("Supabase client is not configured. Check /admin/config.js.");
-    }
-
     const { data, error } = await window.MUBI_SUPABASE
-      .from("projects")
-      .select("title, slug, date, year, published")
+      .from("products")
+      .select("*")
       .eq("published", true)
-      .order("date", { ascending: false, nullsFirst: false });
+      .order("created_at", { ascending: false });
 
-    if (error) {
-      throw new Error(error.message || "Supabase request failed.");
-    }
+    if (error) throw error;
 
-    if (!Array.isArray(data)) {
-      throw new Error("The projects response was not in the expected format.");
-    }
-
-    count.textContent = `${data.length} projects`;
-
-    if (data.length === 0) {
-      list.innerHTML = `
-        <div class="row">
-          <span class="meta">—</span>
-          <span class="title">No published projects found.</span>
-          <span class="meta date"></span>
-          <span>→</span>
-        </div>`;
+    if (!data || data.length === 0) {
+      store.innerHTML = '<p class="meta">No products available yet.</p>';
       return;
     }
 
-    list.innerHTML = data.map(project => {
-      const date = project.date
-        ? new Date(project.date + "T00:00:00").toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-          })
+    store.innerHTML = data.map(product => {
+      const image = product.image_url || product.image || product.image_path || "";
+      const title = escapeHtml(product.title || product.name || "Untitled product");
+      const price = product.price != null && product.price !== ""
+        ? "₹" + escapeHtml(product.price)
         : "";
 
       return `
-        <a class="row" href="/project.html?slug=${encodeURIComponent(project.slug || "")}">
-          <span class="meta">${escapeHtml(project.year || "")}</span>
-          <span class="title">${escapeHtml(project.title || "Untitled project")}</span>
-          <span class="meta date">${escapeHtml(date)}</span>
-          <span>→</span>
-        </a>`;
+        <article class="product">
+          <div class="product-img">
+            ${image
+              ? `<img src="${escapeHtml(image)}" alt="${title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`
+              : '<span class="ph">[ product image ]</span>'}
+          </div>
+          <div class="product-info">
+            <div class="title">${title}</div>
+            <div class="meta">${price}</div>
+          </div>
+        </article>`;
     }).join("");
-
   } catch (error) {
-    console.error("MUBIKISHORE project loading error:", error);
-    showError(error.message || "An unknown error occurred.");
+    console.error("Store loading error:", error);
+    store.innerHTML =
+      '<p class="meta">Unable to load products. Please try again later.</p>';
   }
 })();
 </script>
