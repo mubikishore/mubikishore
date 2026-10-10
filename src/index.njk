@@ -90,7 +90,7 @@ layout: base.njk
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-  const safeImage = value => {
+  function safeImage(value) {
     if (!value) return "";
     try {
       const url = new URL(value, location.origin);
@@ -98,17 +98,28 @@ layout: base.njk
     } catch {
       return "";
     }
-  };
+  }
+
+  function safeLink(value) {
+    if (!value) return "";
+    try {
+      const url = new URL(value, location.origin);
+      return ["https:", "http:"].includes(url.protocol) ? url.href : "";
+    } catch {
+      return "";
+    }
+  }
 
   if (!db) {
     document.getElementById("project-count").textContent = "Content unavailable";
-    document.getElementById("cms-products").innerHTML =
+    document.getElementById("cms-projects").innerHTML =
       '<p class="meta">Unable to connect to the content database.</p>';
+    document.getElementById("cms-products").innerHTML = "";
     document.getElementById("cms-other").innerHTML = "";
     return;
   }
 
-  // PROJECTS
+  // SELECTED WORK
   try {
     const { data, error } = await db
       .from("projects")
@@ -126,7 +137,9 @@ layout: base.njk
       ? projects.map(project => {
           const date = project.date
             ? new Date(project.date + "T00:00:00").toLocaleDateString("en-GB", {
-                day: "numeric", month: "long", year: "numeric"
+                day: "numeric",
+                month: "long",
+                year: "numeric"
               })
             : "";
 
@@ -138,19 +151,23 @@ layout: base.njk
               <span>→</span>
             </a>`;
         }).join("")
-      : '<div class="row"><span class="meta">—</span><span class="title">No published projects yet.</span><span></span><span>→</span></div>';
+      : `<div class="row">
+          <span class="meta">—</span>
+          <span class="title">No published projects yet.</span>
+          <span></span><span>→</span>
+        </div>`;
   } catch (error) {
     console.error("Projects:", error);
     document.getElementById("project-count").textContent = "Projects unavailable";
     document.getElementById("cms-projects").innerHTML =
-      '<p class="meta">Could not load projects. Please try again later.</p>';
+      '<p class="meta">Could not load projects.</p>';
   }
 
-  // STORE PRODUCTS
+  // STORE PRODUCTS — CLICKABLE WHEN A LINK IS PROVIDED
   try {
     const { data, error } = await db
       .from("products")
-      .select("id, title, slug, price, description, image, published, created_at")
+      .select("id, title, slug, price, description, image, link_url, published, created_at")
       .eq("published", true)
       .order("created_at", { ascending: false });
 
@@ -162,23 +179,37 @@ layout: base.njk
     container.innerHTML = products.length
       ? products.map(product => {
           const image = safeImage(product.image);
-          return `
-            <article class="product">
-              <div class="product-img">
-                ${image
-                  ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">`
-                  : '<span class="ph">[ product image ]</span>'}
-              </div>
-              <div class="product-info">
-                <div class="title">${escapeHtml(product.title)}</div>
-                ${product.description
-                  ? `<p class="meta">${escapeHtml(product.description)}</p>` : ""}
-                <div class="meta">${product.price
-                  ? `₹ ${escapeHtml(product.price)}` : ""}</div>
-              </div>
-            </article>`;
+          const link = safeLink(product.link_url);
+
+          const cardContent = `
+            <div class="product-img">
+              ${image
+                ? `<img src="${escapeHtml(image)}"
+                    alt="${escapeHtml(product.title)}"
+                    loading="lazy"
+                    style="width:100%;height:100%;object-fit:cover;display:block">`
+                : '<span class="ph">[ product image ]</span>'}
+            </div>
+            <div class="product-info">
+              <div class="title">${escapeHtml(product.title || "Untitled product")}</div>
+              ${product.description
+                ? `<p class="meta">${escapeHtml(product.description)}</p>`
+                : ""}
+              <div class="meta">${product.price
+                ? `₹ ${escapeHtml(product.price)}`
+                : ""}</div>
+            </div>`;
+
+          return link
+            ? `<a class="product" href="${escapeHtml(link)}"
+                  target="_blank" rel="noopener noreferrer"
+                  aria-label="View ${escapeHtml(product.title)}">
+                 ${cardContent}
+               </a>`
+            : `<article class="product">${cardContent}</article>`;
         }).join("")
       : '<p class="meta">No published products yet.</p>';
+
   } catch (error) {
     console.error("Products:", error);
     document.getElementById("cms-products").innerHTML =
@@ -201,18 +232,25 @@ layout: base.njk
     container.innerHTML = items.length
       ? items.map(item => {
           const image = safeImage(item.image);
+
           return `
             <article class="tile" style="position:relative;overflow:hidden">
               ${image
-                ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
+                ? `<img src="${escapeHtml(image)}"
+                    alt="${escapeHtml(item.title)}"
+                    loading="lazy"
+                    style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
                 : `<span class="ph">${escapeHtml(item.type || "Photography")}</span>`}
               <div style="position:absolute;left:0;right:0;bottom:0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,.8));color:white">
                 <div>${escapeHtml(item.title)}</div>
-                ${item.caption ? `<div class="meta">${escapeHtml(item.caption)}</div>` : ""}
+                ${item.caption
+                  ? `<div class="meta">${escapeHtml(item.caption)}</div>`
+                  : ""}
               </div>
             </article>`;
         }).join("")
       : '<p class="meta">No published content yet.</p>';
+
   } catch (error) {
     console.error("Other content:", error);
     document.getElementById("cms-other").innerHTML =
