@@ -1,3 +1,4 @@
+
 ---
 title: MUBIKISHORE
 layout: base.njk
@@ -7,7 +8,7 @@ layout: base.njk
     <div class="hero-copy">
       <div class="eyebrow">{{site.tagline}}</div>
       <h1>MUBI<br>KISHORE</h1>
-      <div class="ph">[ replace with hero still / reel ]</div>
+      <div class="hero-media" id="hero-media"><span class="ph">[ hero still / reel ]</span></div>
     </div>
   </div>
   <div class="hero-meta meta">
@@ -38,18 +39,8 @@ layout: base.njk
     <span>02 / Store</span>
     <span>Objects / prints / editions</span>
   </div>
-  <div class="grid store">
-    {% for p in collections.store %}
-    <div class="product">
-      <div class="product-img">
-        <span class="ph">[ product image ]</span>
-      </div>
-      <div class="product-info">
-        <div class="title">{{p.data.title}}</div>
-        <div class="meta">{{p.data.price}}</div>
-      </div>
-    </div>
-    {% endfor %}
+  <div class="grid store" id="cms-products">
+    <p class="meta">Loading products…</p>
   </div>
 </section>
 
@@ -58,12 +49,8 @@ layout: base.njk
     <span>03 / Other Things</span>
     <span>35mm / BTS / photography / tests</span>
   </div>
-  <div class="grid">
-    {% for p in collections.other %}
-    <div class="tile">
-      <span class="ph">[ {{p.data.type}} ]</span>
-    </div>
-    {% endfor %}
+  <div class="grid" id="cms-other">
+    <p class="meta">Loading other things…</p>
   </div>
 </section>
 
@@ -91,88 +78,133 @@ layout: base.njk
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/admin/config.js"></script>
 
+<style>
+.hero-box{position:relative;overflow:hidden}
+.hero-media{width:min(760px,90%);max-height:48vh;aspect-ratio:16/9;margin:26px auto 0;position:relative;overflow:hidden;background:#151515;display:flex;align-items:center;justify-content:center}
+.hero-media video,.hero-media img,.hero-media iframe{width:100%;height:100%;object-fit:cover;border:0}
+.hero-media .ph{position:absolute;z-index:1}
+.product-img img,.tile img{width:100%;height:100%;object-fit:cover;display:block}
+.tile{position:relative;overflow:hidden;display:block}
+.tile-caption{position:absolute;left:12px;right:12px;bottom:12px;font:10px monospace;text-transform:uppercase;color:#fff;text-shadow:0 1px 8px #000}
+.store .product .title{font-size:18px}
+.store .product-info .meta{margin-top:8px}
+.cms-empty{padding:24px;color:#777;font:11px monospace}
+@media(max-width:700px){.hero-media{width:100%;max-height:36vh}}
+</style>
+
 <script>
-(async function () {
-  const list = document.getElementById("cms-projects");
-  const count = document.getElementById("project-count");
+(async function(){
+  const client=window.MUBI_SUPABASE;
+  const $=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const empty=(id,msg)=>{const el=$(id);if(el)el.innerHTML='<p class="cms-empty">'+esc(msg)+'</p>';};
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+  if(!client){
+    empty('cms-projects','Projects are temporarily unavailable.');
+    empty('cms-products','Store is temporarily unavailable.');
+    empty('cms-other','Other content is temporarily unavailable.');
+    return;
   }
 
-  function showError(message) {
-    count.textContent = "Projects unavailable";
-    list.innerHTML = `
-      <div class="row">
-        <span class="meta">!</span>
-        <span class="title">Unable to load projects: ${escapeHtml(message)}</span>
-        <span class="meta date"></span>
-        <span>—</span>
-      </div>`;
+  async function loadProjects(){
+    try{
+      const {data,error}=await client.from('projects')
+        .select('title,slug,date,year,published')
+        .eq('published',true)
+        .order('date',{ascending:false,nullsFirst:false});
+      if(error)throw error;
+      $('project-count').textContent=(data||[]).length+' projects';
+      if(!data?.length){empty('cms-projects','No published projects yet.');return;}
+      $('cms-projects').innerHTML=data.map(p=>{
+        const date=p.date?new Date(p.date+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'';
+        return `<a class="row" href="/project.html?slug=${encodeURIComponent(p.slug||'')}">
+          <span class="meta">${esc(p.year||'')}</span>
+          <span class="title">${esc(p.title||'Untitled project')}</span>
+          <span class="meta date">${esc(date)}</span><span>→</span></a>`;
+      }).join('');
+    }catch(e){console.error('Projects:',e);empty('cms-projects','Projects could not be loaded.');}
   }
 
-  try {
-    if (!window.supabase) {
-      throw new Error("Supabase library did not load. Please try again later.");
-    }
-
-    if (!window.MUBI_SUPABASE) {
-      throw new Error("Supabase client is not configured. Check /admin/config.js.");
-    }
-
-    const { data, error } = await window.MUBI_SUPABASE
-      .from("projects")
-      .select("title, slug, date, year, published")
-      .eq("published", true)
-      .order("date", { ascending: false, nullsFirst: false });
-
-    if (error) {
-      throw new Error(error.message || "Supabase request failed.");
-    }
-
-    if (!Array.isArray(data)) {
-      throw new Error("The projects response was not in the expected format.");
-    }
-
-    count.textContent = `${data.length} projects`;
-
-    if (data.length === 0) {
-      list.innerHTML = `
-        <div class="row">
-          <span class="meta">—</span>
-          <span class="title">No published projects found.</span>
-          <span class="meta date"></span>
-          <span>→</span>
-        </div>`;
-      return;
-    }
-
-    list.innerHTML = data.map(project => {
-      const date = project.date
-        ? new Date(project.date + "T00:00:00").toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-          })
-        : "";
-
-      return `
-        <a class="row" href="/project.html?slug=${encodeURIComponent(project.slug || "")}">
-          <span class="meta">${escapeHtml(project.year || "")}</span>
-          <span class="title">${escapeHtml(project.title || "Untitled project")}</span>
-          <span class="meta date">${escapeHtml(date)}</span>
-          <span>→</span>
-        </a>`;
-    }).join("");
-
-  } catch (error) {
-    console.error("MUBIKISHORE project loading error:", error);
-    showError(error.message || "An unknown error occurred.");
+  async function loadProducts(){
+    try{
+      const {data,error}=await client.from('products').select('*')
+        .eq('published',true).order('created_at',{ascending:false});
+      if(error)throw error;
+      if(!data?.length){empty('cms-products','No products available yet.');return;}
+      $('cms-products').innerHTML=data.map(p=>{
+        const image=p.image||p.image_url||p.image_path||'';
+        const price=p.price!==null&&p.price!==undefined&&p.price!==''
+          ?(String(p.price).startsWith('₹')?p.price:'₹'+p.price):'';
+        return `<article class="product">
+          <div class="product-img">${image?`<img src="${esc(image)}" alt="${esc(p.title||'Product')}" loading="lazy">`:'<span class="ph">[ product image ]</span>'}</div>
+          <div class="product-info"><div class="title">${esc(p.title||'Untitled product')}</div>
+          <div class="meta">${esc(price)}</div>
+          ${p.description?`<p class="meta">${esc(p.description)}</p>`:''}</div>
+        </article>`;
+      }).join('');
+    }catch(e){console.error('Products:',e);empty('cms-products','Products could not be loaded.');}
   }
+
+  async function loadOther(){
+    try{
+      const {data,error}=await client.from('other_content').select('*')
+        .eq('published',true).order('created_at',{ascending:false});
+      if(error)throw error;
+      if(!data?.length){empty('cms-other','No other content published yet.');return;}
+      $('cms-other').innerHTML=data.map(p=>`
+        <article class="tile">
+          ${p.image?`<img src="${esc(p.image)}" alt="${esc(p.title||p.type||'Other content')}" loading="lazy">`:`<span class="ph">${esc(p.type||'Other')}</span>`}
+          <div class="tile-caption">${esc(p.title||p.type||'')}${p.caption?' — '+esc(p.caption):''}</div>
+        </article>`).join('');
+    }catch(e){console.error('Other content:',e);empty('cms-other','Other content could not be loaded.');}
+  }
+
+  async function loadSettings(){
+    try{
+      const {data,error}=await client.from('site_settings').select('*').limit(1);
+      if(error)throw error;
+      const s=data?.[0];
+      if(!s)return;
+
+      const eyebrow=document.querySelector('.hero-copy .eyebrow');
+      if(eyebrow&&s.tagline)eyebrow.textContent=s.tagline;
+
+      const location=document.querySelector('.hero-meta span');
+      if(location&&s.location)location.textContent=s.location;
+
+      const about=document.querySelector('.about-copy');
+      if(about&&s.about)about.textContent=s.about;
+
+      const side=document.querySelector('.about-side');
+      if(side){
+        side.innerHTML=esc(s.location||'')+
+          '<br><br>Available for films / collaborations / commercial work<br><br>'+
+          (s.instagram?`<a href="${esc(s.instagram)}" target="_blank" rel="noopener">INSTAGRAM ↗</a>`:'')+
+          '<br>'+(s.email?`<a href="mailto:${esc(s.email)}">${esc(s.email)}</a>`:'');
+      }
+
+      const media=$('hero-media');
+      if(media&&s.hero_video){
+        const video=s.hero_video.trim();
+        if(/\.(mp4|webm)(\?.*)?$/i.test(video)){
+          media.innerHTML=`<video src="${esc(video)}" autoplay muted loop playsinline controls></video>`;
+        }else{
+          const match=video.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|vimeo\.com\/)([\w-]+)/);
+          if(match){
+            const src=video.includes('vimeo')
+              ?'https://player.vimeo.com/video/'+match[1]+'?autoplay=1&muted=1&loop=1'
+              :'https://www.youtube-nocookie.com/embed/'+match[1]+'?autoplay=1&mute=1&loop=1&playlist='+match[1];
+            media.innerHTML=`<iframe src="${src}" title="MUBIKISHORE hero reel" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+          }else{
+            media.innerHTML=`<a href="${esc(video)}" target="_blank" rel="noopener">WATCH HERO REEL ↗</a>`;
+          }
+        }
+      }else if(media&&s.hero_image){
+        media.innerHTML=`<img src="${esc(s.hero_image)}" alt="MUBIKISHORE hero still">`;
+      }
+    }catch(e){console.warn('Settings unavailable:',e.message);}
+  }
+
+  await Promise.all([loadProjects(),loadProducts(),loadOther(),loadSettings()]);
 })();
 </script>
