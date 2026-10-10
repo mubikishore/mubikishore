@@ -1,12 +1,312 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>STORE.</title><link rel="stylesheet" href="/admin/styles.css"></head><body><header class="top"><div class="logo">MUBIKISHORE</div><div class="top-right"><div class="admin-label">ADMIN / SITE CONTENT DASHBOARD</div><button class="logout" id="logout">SIGN OUT</button></div></header><div class="layout"><aside class="sidebar">
-<div class="section-label">CONTENT</div>
-<button class="nav-button" data-nav="dashboard">Dashboard</button>
-<button class="nav-button" data-nav="projects">Projects</button>
-<button class="nav-button" data-nav="project-edit">Add Project</button>
-<div class="section-label">STORE</div>
-<button class="nav-button" data-nav="store">Products</button>
-<div class="section-label">OTHER</div>
-<button class="nav-button" data-nav="other">Other Content</button>
-<div class="section-label">SYSTEM</div>
-<button class="nav-button" data-nav="settings">Settings</button>
-</aside><main class="content"><div class="eyebrow">ADMIN</div><h1>STORE.</h1><p class="intro">Store management will be added here.</p><div class="notice">This section is prepared for the next content module.</div></main></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/admin/config.js"></script><script src="/admin/app.js"></script></body></html>
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STORE — MUBIKISHORE</title>
+<link rel="stylesheet" href="/admin/styles.css">
+<style>
+.product-form{max-width:850px;margin-top:24px}
+.product-form input,.product-form textarea,.product-form select{width:100%;box-sizing:border-box;padding:12px;background:#171717;color:#fff;border:1px solid #444;border-radius:4px}
+.product-form label{display:block;margin:16px 0 7px;font-size:12px;letter-spacing:1px}
+.product-form textarea{min-height:90px}
+.product-list{display:grid;gap:12px;margin-top:28px}
+.product-card{border:1px solid #393939;padding:16px;display:grid;grid-template-columns:100px 1fr;gap:18px;align-items:center}
+.product-card img{width:100px;height:100px;object-fit:cover;background:#222}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.actions button,.btn{padding:10px 14px;cursor:pointer;border:1px solid #555;background:#222;color:#fff;border-radius:3px}
+.primary{background:#fff!important;color:#111!important}
+.danger{border-color:#a44!important}
+#status{margin-top:15px;white-space:pre-wrap}
+.hidden{display:none}
+@media(max-width:600px){.product-card{grid-template-columns:70px 1fr}.product-card img{width:70px;height:70px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo">MUBIKISHORE</div>
+  <div class="top-right">
+    <div class="admin-label">ADMIN / SITE CONTENT DASHBOARD</div>
+    <button class="logout" id="logout">SIGN OUT</button>
+  </div>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="section-label">CONTENT</div>
+  <button class="nav-button" data-nav="dashboard">Dashboard</button>
+  <button class="nav-button" data-nav="projects">Projects</button>
+  <button class="nav-button" data-nav="project-edit">Add Project</button>
+  <div class="section-label">STORE</div>
+  <button class="nav-button" data-nav="store">Products</button>
+  <div class="section-label">OTHER</div>
+  <button class="nav-button" data-nav="other">Other Content</button>
+  <div class="section-label">SYSTEM</div>
+  <button class="nav-button" data-nav="settings">Settings</button>
+</aside>
+
+<main class="content">
+  <div class="eyebrow">ADMIN / STORE</div>
+  <h1>PRODUCTS.</h1>
+  <p class="intro">Manage store items, prints and editions.</p>
+
+  <button class="btn primary" id="newProduct">+ ADD PRODUCT</button>
+
+  <form id="productForm" class="product-form hidden">
+    <h2 id="formHeading">ADD PRODUCT</h2>
+    <input type="hidden" id="productId">
+
+    <label for="title">PRODUCT TITLE *</label>
+    <input id="title" required maxlength="200" placeholder="e.g. First Print">
+
+    <label for="slug">URL SLUG</label>
+    <input id="slug" placeholder="first-print">
+
+    <label for="price">PRICE</label>
+    <input id="price" placeholder="e.g. ₹500">
+
+    <label for="description">DESCRIPTION</label>
+    <textarea id="description" placeholder="Product details"></textarea>
+
+    <label for="imageFile">PRODUCT IMAGE</label>
+    <input id="imageFile" type="file" accept="image/*">
+    <div id="imagePreview" style="margin-top:12px"></div>
+    <label><input id="removeImage" type="checkbox" style="width:auto"> Remove current image</label>
+
+    <label for="imageUrl">OR IMAGE URL</label>
+    <input id="imageUrl" type="url" placeholder="https://...">
+
+    <label for="published">VISIBILITY</label>
+    <select id="published">
+      <option value="true">Published</option>
+      <option value="false">Hidden / Draft</option>
+    </select>
+
+    <div class="actions">
+      <button class="btn primary" type="submit" id="saveProduct">SAVE PRODUCT</button>
+      <button class="btn" type="button" id="cancelEdit">CANCEL</button>
+    </div>
+  </form>
+
+  <div id="status" class="notice" role="status">Loading products…</div>
+  <div id="productList" class="product-list"></div>
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/admin/config.js"></script>
+<script src="/admin/app.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  let products = [];
+  let currentImage = "";
+
+  function message(text) { $("status").textContent = text; }
+  function escapeHTML(value="") {
+    return String(value).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    })[c]);
+  }
+
+  function slugify(value) {
+    return value.toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  }
+
+  function resetForm() {
+    $("productForm").reset();
+    $("productId").value = "";
+    $("imageUrl").value = "";
+    $("imagePreview").replaceChildren();
+    $("formHeading").textContent = "ADD PRODUCT";
+    $("removeImage").checked = false;
+    currentImage = "";
+    $("productForm").classList.add("hidden");
+  }
+
+  function openForm(product=null) {
+    resetForm();
+    $("productForm").classList.remove("hidden");
+    if (!product) {
+      $("formHeading").textContent = "ADD PRODUCT";
+      return;
+    }
+
+    $("formHeading").textContent = "EDIT PRODUCT";
+    $("productId").value = product.id;
+    $("title").value = product.title || "";
+    $("slug").value = product.slug || "";
+    $("price").value = product.price ?? "";
+    $("description").value = product.description || "";
+    $("published").value = String(product.published !== false);
+    currentImage = product.image || product.image_url || "";
+    $("imageUrl").value = currentImage;
+
+    if (currentImage) {
+      const img = document.createElement("img");
+      img.src = currentImage;
+      img.alt = "Current product image";
+      img.style.cssText = "max-width:220px;max-height:180px;object-fit:contain";
+      $("imagePreview").append(img);
+    }
+  }
+
+  async function loadProducts() {
+    message("Loading products…");
+    $("productList").replaceChildren();
+
+    // Supports the common table name used by this CMS.
+    // If your project uses a different schema, the error will be shown below.
+    const result = await MUBI_SUPABASE.from("products")
+      .select("*").order("created_at", {ascending:false});
+
+    if (result.error) {
+      message("Could not load products: " + result.error.message +
+        "\n\nThe products table may not exist yet. We'll set up the correct table if needed.");
+      return;
+    }
+
+    products = result.data || [];
+    message(products.length + " product(s)");
+
+    if (!products.length) {
+      $("productList").innerHTML = "<p>No products yet. Click ADD PRODUCT to create your first one.</p>";
+      return;
+    }
+
+    for (const p of products) {
+      const card = document.createElement("article");
+      card.className = "product-card";
+      const image = p.image || p.image_url || "";
+      const img = document.createElement("img");
+      img.alt = p.title || "Product";
+      if (image) img.src = image;
+
+      const details = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = p.title || "Untitled product";
+      const info = document.createElement("p");
+      info.textContent = (p.price || "No price") + " · " +
+        (p.published === false ? "Hidden" : "Published");
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const edit = document.createElement("button");
+      edit.textContent = "EDIT";
+      edit.onclick = () => openForm(p);
+
+      const visibility = document.createElement("button");
+      visibility.textContent = p.published === false ? "PUBLISH" : "HIDE";
+      visibility.onclick = async () => {
+        const r = await MUBI_SUPABASE.from("products")
+          .update({published: p.published === false}).eq("id", p.id);
+        if (r.error) return message("Visibility update failed: " + r.error.message);
+        await loadProducts();
+      };
+
+      const del = document.createElement("button");
+      del.textContent = "DELETE";
+      del.className = "danger";
+      del.onclick = async () => {
+        if (!confirm('Delete "' + (p.title || "this product") + '"? This cannot be undone.')) return;
+        const r = await MUBI_SUPABASE.from("products").delete().eq("id",p.id);
+        if (r.error) return message("Delete failed: " + r.error.message);
+        await loadProducts();
+      };
+
+      actions.append(edit,visibility,del);
+      details.append(title,info,actions);
+      card.append(img,details);
+      $("productList").append(card);
+    }
+  }
+
+  $("newProduct").onclick = () => openForm();
+  $("cancelEdit").onclick = resetForm;
+
+  $("title").addEventListener("input", () => {
+    if (!$("productId").value) $("slug").value = slugify($("title").value);
+  });
+
+  $("imageFile").addEventListener("change", () => {
+    const file = $("imageFile").files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    $("imagePreview").replaceChildren();
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "New image preview";
+    img.style.cssText = "max-width:220px;max-height:180px;object-fit:contain";
+    $("imagePreview").append(img);
+    $("removeImage").checked = false;
+  });
+
+  $("removeImage").addEventListener("change", () => {
+    if ($("removeImage").checked) {
+      currentImage = "";
+      $("imageUrl").value = "";
+      $("imagePreview").replaceChildren();
+      $("imageFile").value = "";
+    }
+  });
+
+  $("productForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const button = $("saveProduct");
+    button.disabled = true;
+    message("Saving product…");
+
+    try {
+      if (!window.MUBI_SUPABASE) throw new Error("Supabase client is not configured.");
+      const title = $("title").value.trim();
+      if (!title) throw new Error("Please enter a product title.");
+
+      let image = $("removeImage").checked ? "" : $("imageUrl").value.trim() || currentImage;
+      const file = $("imageFile").files[0];
+
+      if (file) {
+        const extension = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
+        const path = "products/" + crypto.randomUUID() + "." + extension;
+        const upload = await MUBI_SUPABASE.storage.from(MUBI_CONFIG.MEDIA_BUCKET).upload(path,file);
+        if (upload.error) throw upload.error;
+        image = MUBI_SUPABASE.storage.from(MUBI_CONFIG.MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+      }
+
+      const payload = {
+        title,
+        slug: $("slug").value.trim() || slugify(title),
+        price: $("price").value.trim(),
+        description: $("description").value.trim(),
+        image,
+        published: $("published").value === "true"
+      };
+
+      const id = $("productId").value;
+      const result = id
+        ? await MUBI_SUPABASE.from("products").update(payload).eq("id",id)
+        : await MUBI_SUPABASE.from("products").insert(payload);
+
+      if (result.error) throw result.error;
+      resetForm();
+      message("Product saved successfully.");
+      await loadProducts();
+    } catch (error) {
+      message("Could not save product: " + (error.message || error));
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  if (!window.MUBI_SUPABASE) {
+    message("Supabase isn't configured. Check /admin/config.js.");
+    return;
+  }
+
+  loadProducts();
+})();
+</script>
+</body>
+</html>
