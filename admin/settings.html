@@ -1,12 +1,171 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SETTINGS.</title><link rel="stylesheet" href="/admin/styles.css"></head><body><header class="top"><div class="logo">MUBIKISHORE</div><div class="top-right"><div class="admin-label">ADMIN / SITE CONTENT DASHBOARD</div><button class="logout" id="logout">SIGN OUT</button></div></header><div class="layout"><aside class="sidebar">
-<div class="section-label">CONTENT</div>
-<button class="nav-button" data-nav="dashboard">Dashboard</button>
-<button class="nav-button" data-nav="projects">Projects</button>
-<button class="nav-button" data-nav="project-edit">Add Project</button>
-<div class="section-label">STORE</div>
-<button class="nav-button" data-nav="store">Products</button>
-<div class="section-label">OTHER</div>
-<button class="nav-button" data-nav="other">Other Content</button>
-<div class="section-label">SYSTEM</div>
-<button class="nav-button" data-nav="settings">Settings</button>
-</aside><main class="content"><div class="eyebrow">ADMIN</div><h1>SETTINGS.</h1><p class="intro">Authentication and site configuration are managed through Supabase.</p><div class="notice">This section is prepared for the next content module.</div></main></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/admin/config.js"></script><script src="/admin/app.js"></script></body></html>
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SETTINGS.</title>
+  <link rel="stylesheet" href="/admin/styles.css">
+  <style>
+    .settings-form { max-width: 850px; margin-top: 32px; }
+    .settings-form label { display:block; margin:22px 0 8px; font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+    .settings-form input, .settings-form textarea { width:100%; padding:14px; background:#171717; color:#f1f0ec; border:1px solid #444; border-radius:4px; font:14px Arial,sans-serif; }
+    .settings-form textarea { min-height:100px; resize:vertical; }
+    .settings-form .check { display:flex; align-items:center; gap:10px; text-transform:none; }
+    .settings-form .check input { width:auto; }
+    .save-settings { margin-top:28px; padding:14px 22px; cursor:pointer; background:#f1f0ec; color:#111; border:0; border-radius:3px; font-weight:bold; }
+    .status { margin-top:16px; color:#aaa; }
+    .settings-note { color:#999; font-size:12px; line-height:1.6; }
+  </style>
+</head>
+<body>
+<header class="top">
+  <div class="logo">MUBIKISHORE</div>
+  <div class="top-right">
+    <div class="admin-label">ADMIN / SITE CONTENT DASHBOARD</div>
+    <button class="logout" id="logout">SIGN OUT</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="section-label">CONTENT</div>
+    <button class="nav-button" data-nav="dashboard">Dashboard</button>
+    <button class="nav-button" data-nav="projects">Projects</button>
+    <button class="nav-button" data-nav="project-edit">Add Project</button>
+    <div class="section-label">STORE</div>
+    <button class="nav-button" data-nav="store">Products</button>
+    <div class="section-label">OTHER</div>
+    <button class="nav-button" data-nav="other">Other Content</button>
+    <div class="section-label">SYSTEM</div>
+    <button class="nav-button" data-nav="settings">Settings</button>
+  </aside>
+
+  <main class="content">
+    <div class="eyebrow">ADMIN / CONFIGURATION</div>
+    <h1>SETTINGS.</h1>
+    <p class="intro">Manage your homepage, hero reel and contact information.</p>
+
+    <form class="settings-form" id="settings-form">
+      <h2>HERO REEL</h2>
+      <p class="settings-note">Paste a direct video file URL ending in .mp4 or a public video URL that the browser can play. YouTube page links are not direct video files.</p>
+
+      <label for="hero_video">Hero video URL</label>
+      <input id="hero_video" type="url" placeholder="https://example.com/reel.mp4">
+
+      <label for="hero_poster">Poster image URL (optional)</label>
+      <input id="hero_poster" type="url" placeholder="https://example.com/poster.jpg">
+
+      <label class="check"><input id="hero_autoplay" type="checkbox"> Autoplay video</label>
+      <label class="check"><input id="hero_muted" type="checkbox"> Mute video</label>
+      <label class="check"><input id="hero_loop" type="checkbox"> Loop video</label>
+
+      <h2 style="margin-top:40px">SITE INFORMATION</h2>
+
+      <label for="tagline">Tagline</label>
+      <input id="tagline" type="text">
+
+      <label for="location">Location</label>
+      <input id="location" type="text">
+
+      <label for="about">About text</label>
+      <textarea id="about"></textarea>
+
+      <label for="instagram">Instagram URL</label>
+      <input id="instagram" type="url">
+
+      <label for="email">Email</label>
+      <input id="email" type="email">
+
+      <button class="save-settings" type="submit">SAVE SETTINGS</button>
+      <p class="status" id="status" role="status"></p>
+    </form>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/admin/config.js"></script>
+<script src="/admin/app.js"></script>
+<script>
+(async function () {
+  const db = window.MUBI_SUPABASE;
+  const form = document.getElementById("settings-form");
+  const status = document.getElementById("status");
+  const fields = [
+    "hero_video", "hero_poster", "hero_autoplay", "hero_muted",
+    "hero_loop", "tagline", "location", "about", "instagram", "email"
+  ];
+
+  if (!db) {
+    status.textContent = "Database connection missing. Check /admin/config.js.";
+    return;
+  }
+
+  function showSettings(row) {
+    fields.forEach(key => {
+      const input = document.getElementById(key);
+      if (!input) return;
+      if (input.type === "checkbox") input.checked = Boolean(row[key]);
+      else input.value = row[key] || "";
+    });
+  }
+
+  try {
+    const { data, error } = await db
+      .from("site_settings")
+      .select("*")
+      .order("id", { ascending: true })
+      .limit(1);
+
+    if (error) throw error;
+
+    if (data && data.length) {
+      showSettings(data[0]);
+    } else {
+      status.textContent = "No settings row exists yet. Ask me before creating one.";
+    }
+  } catch (error) {
+    console.error(error);
+    status.textContent = "Could not load settings: " + error.message;
+  }
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    status.textContent = "Saving…";
+
+    const values = {};
+    fields.forEach(key => {
+      const input = document.getElementById(key);
+      values[key] = input.type === "checkbox" ? input.checked : input.value.trim();
+    });
+    values.updated_at = new Date().toISOString();
+
+    try {
+      const { data: rows, error: readError } = await db
+        .from("site_settings")
+        .select("id")
+        .order("id", { ascending: true })
+        .limit(1);
+
+      if (readError) throw readError;
+      if (!rows || !rows.length) {
+        throw new Error("No settings row exists. Nothing was changed.");
+      }
+
+      const { error } = await db
+        .from("site_settings")
+        .update(values)
+        .eq("id", rows[0].id);
+
+      if (error) throw error;
+      status.textContent = "Settings saved successfully.";
+    } catch (error) {
+      console.error(error);
+      status.textContent = "Save failed: " + error.message;
+    }
+  });
+})();
+</script>
+</body>
+</html>
+```
