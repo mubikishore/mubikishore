@@ -7,7 +7,9 @@ layout: base.njk
     <div class="hero-copy">
       <div class="eyebrow">{{site.tagline}}</div>
       <h1>MUBI<br>KISHORE</h1>
-      <div class="ph">[ replace with hero still / reel ]</div>
+      <div class="hero-media" id="hero-media">
+        <span class="ph">[ hero still / reel ]</span>
+      </div>
     </div>
   </div>
   <div class="hero-meta meta">
@@ -38,18 +40,8 @@ layout: base.njk
     <span>02 / Store</span>
     <span>Objects / prints / editions</span>
   </div>
-  <div class="grid store">
-    {% for p in collections.store %}
-    <div class="product">
-      <div class="product-img">
-        <span class="ph">[ product image ]</span>
-      </div>
-      <div class="product-info">
-        <div class="title">{{p.data.title}}</div>
-        <div class="meta">{{p.data.price}}</div>
-      </div>
-    </div>
-    {% endfor %}
+  <div class="grid store" id="cms-products">
+    <p class="meta">Loading products…</p>
   </div>
 </section>
 
@@ -58,12 +50,8 @@ layout: base.njk
     <span>03 / Other Things</span>
     <span>35mm / BTS / photography / tests</span>
   </div>
-  <div class="grid">
-    {% for p in collections.other %}
-    <div class="tile">
-      <span class="ph">[ {{p.data.type}} ]</span>
-    </div>
-    {% endfor %}
+  <div class="grid" id="cms-other">
+    <p class="meta">Loading other content…</p>
   </div>
 </section>
 
@@ -93,86 +81,142 @@ layout: base.njk
 
 <script>
 (async function () {
-  const list = document.getElementById("cms-projects");
-  const count = document.getElementById("project-count");
+  const db = window.MUBI_SUPABASE;
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+  const escapeHtml = value => String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+  const safeImage = value => {
+    if (!value) return "";
+    try {
+      const url = new URL(value, location.origin);
+      return ["https:", "http:"].includes(url.protocol) ? url.href : "";
+    } catch {
+      return "";
+    }
+  };
+
+  if (!db) {
+    document.getElementById("project-count").textContent = "Content unavailable";
+    document.getElementById("cms-products").innerHTML =
+      '<p class="meta">Unable to connect to the content database.</p>';
+    document.getElementById("cms-other").innerHTML = "";
+    return;
   }
 
-  function showError(message) {
-    count.textContent = "Projects unavailable";
-    list.innerHTML = `
-      <div class="row">
-        <span class="meta">!</span>
-        <span class="title">Unable to load projects: ${escapeHtml(message)}</span>
-        <span class="meta date"></span>
-        <span>—</span>
-      </div>`;
-  }
-
+  // PROJECTS
   try {
-    if (!window.supabase) {
-      throw new Error("Supabase library did not load. Please try again later.");
-    }
-
-    if (!window.MUBI_SUPABASE) {
-      throw new Error("Supabase client is not configured. Check /admin/config.js.");
-    }
-
-    const { data, error } = await window.MUBI_SUPABASE
+    const { data, error } = await db
       .from("projects")
       .select("title, slug, date, year, published")
       .eq("published", true)
       .order("date", { ascending: false, nullsFirst: false });
 
-    if (error) {
-      throw new Error(error.message || "Supabase request failed.");
-    }
+    if (error) throw error;
 
-    if (!Array.isArray(data)) {
-      throw new Error("The projects response was not in the expected format.");
-    }
+    const projects = data || [];
+    document.getElementById("project-count").textContent =
+      `${projects.length} projects`;
 
-    count.textContent = `${data.length} projects`;
+    document.getElementById("cms-projects").innerHTML = projects.length
+      ? projects.map(project => {
+          const date = project.date
+            ? new Date(project.date + "T00:00:00").toLocaleDateString("en-GB", {
+                day: "numeric", month: "long", year: "numeric"
+              })
+            : "";
 
-    if (data.length === 0) {
-      list.innerHTML = `
-        <div class="row">
-          <span class="meta">—</span>
-          <span class="title">No published projects found.</span>
-          <span class="meta date"></span>
-          <span>→</span>
-        </div>`;
-      return;
-    }
-
-    list.innerHTML = data.map(project => {
-      const date = project.date
-        ? new Date(project.date + "T00:00:00").toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-          })
-        : "";
-
-      return `
-        <a class="row" href="/project.html?slug=${encodeURIComponent(project.slug || "")}">
-          <span class="meta">${escapeHtml(project.year || "")}</span>
-          <span class="title">${escapeHtml(project.title || "Untitled project")}</span>
-          <span class="meta date">${escapeHtml(date)}</span>
-          <span>→</span>
-        </a>`;
-    }).join("");
-
+          return `
+            <a class="row" href="/project.html?slug=${encodeURIComponent(project.slug || "")}">
+              <span class="meta">${escapeHtml(project.year || "")}</span>
+              <span class="title">${escapeHtml(project.title || "Untitled project")}</span>
+              <span class="meta date">${escapeHtml(date)}</span>
+              <span>→</span>
+            </a>`;
+        }).join("")
+      : '<div class="row"><span class="meta">—</span><span class="title">No published projects yet.</span><span></span><span>→</span></div>';
   } catch (error) {
-    console.error("MUBIKISHORE project loading error:", error);
-    showError(error.message || "An unknown error occurred.");
+    console.error("Projects:", error);
+    document.getElementById("project-count").textContent = "Projects unavailable";
+    document.getElementById("cms-projects").innerHTML =
+      '<p class="meta">Could not load projects. Please try again later.</p>';
+  }
+
+  // STORE PRODUCTS
+  try {
+    const { data, error } = await db
+      .from("products")
+      .select("id, title, slug, price, description, image, published, created_at")
+      .eq("published", true)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const products = data || [];
+    const container = document.getElementById("cms-products");
+
+    container.innerHTML = products.length
+      ? products.map(product => {
+          const image = safeImage(product.image);
+          return `
+            <article class="product">
+              <div class="product-img">
+                ${image
+                  ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">`
+                  : '<span class="ph">[ product image ]</span>'}
+              </div>
+              <div class="product-info">
+                <div class="title">${escapeHtml(product.title)}</div>
+                ${product.description
+                  ? `<p class="meta">${escapeHtml(product.description)}</p>` : ""}
+                <div class="meta">${product.price
+                  ? `₹ ${escapeHtml(product.price)}` : ""}</div>
+              </div>
+            </article>`;
+        }).join("")
+      : '<p class="meta">No published products yet.</p>';
+  } catch (error) {
+    console.error("Products:", error);
+    document.getElementById("cms-products").innerHTML =
+      '<p class="meta">Products could not be loaded.</p>';
+  }
+
+  // OTHER CONTENT
+  try {
+    const { data, error } = await db
+      .from("other_content")
+      .select("id, title, type, caption, image, published, created_at")
+      .eq("published", true)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const items = data || [];
+    const container = document.getElementById("cms-other");
+
+    container.innerHTML = items.length
+      ? items.map(item => {
+          const image = safeImage(item.image);
+          return `
+            <article class="tile" style="position:relative;overflow:hidden">
+              ${image
+                ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
+                : `<span class="ph">${escapeHtml(item.type || "Photography")}</span>`}
+              <div style="position:absolute;left:0;right:0;bottom:0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,.8));color:white">
+                <div>${escapeHtml(item.title)}</div>
+                ${item.caption ? `<div class="meta">${escapeHtml(item.caption)}</div>` : ""}
+              </div>
+            </article>`;
+        }).join("")
+      : '<p class="meta">No published content yet.</p>';
+  } catch (error) {
+    console.error("Other content:", error);
+    document.getElementById("cms-other").innerHTML =
+      '<p class="meta">Other content could not be loaded.</p>';
   }
 })();
 </script>
