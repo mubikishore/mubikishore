@@ -1,3 +1,4 @@
+
 ---
 title: MUBIKISHORE
 layout: base.njk
@@ -57,14 +58,10 @@ layout: base.njk
   </div>
 </section>
 
-<!-- POLAROID VIEWER -->
-<div class="other-viewer" id="other-viewer" role="dialog"
-  aria-modal="true" aria-label="Photography preview" hidden>
-  <button class="other-viewer-close" id="other-viewer-close"
-    type="button" aria-label="Close preview">×</button>
-
-  <button class="other-viewer-arrow other-viewer-prev"
-    id="other-viewer-prev" type="button" aria-label="Previous image">←</button>
+<!-- OTHER CONTENT PHOTO VIEWER -->
+<div class="other-viewer" id="other-viewer" role="dialog" aria-modal="true" aria-label="Photo preview" hidden>
+  <button class="other-viewer-close" id="other-viewer-close" type="button" aria-label="Close preview">×</button>
+  <button class="other-viewer-arrow other-viewer-prev" id="other-viewer-prev" type="button" aria-label="Previous photo">←</button>
 
   <div class="other-viewer-stage">
     <article class="other-print">
@@ -75,15 +72,13 @@ layout: base.njk
         <div class="other-print-type" id="other-viewer-type"></div>
         <h2 id="other-viewer-title"></h2>
         <p id="other-viewer-caption"></p>
-        <a id="other-viewer-link" href="#" target="_blank"
-          rel="noopener noreferrer" hidden>OPEN LINK ↗</a>
+        <a id="other-viewer-link" href="#" target="_blank" rel="noopener noreferrer" hidden>OPEN LINK ↗</a>
       </div>
     </article>
     <div class="other-viewer-count" id="other-viewer-count"></div>
   </div>
 
-  <button class="other-viewer-arrow other-viewer-next"
-    id="other-viewer-next" type="button" aria-label="Next image">→</button>
+  <button class="other-viewer-arrow other-viewer-next" id="other-viewer-next" type="button" aria-label="Next photo">→</button>
 </div>
 
 <section class="section" id="about">
@@ -187,95 +182,112 @@ layout: base.njk
   gap: 12px;
 }
 
-/* OTHER CONTENT TILES */
-.other-tile {
+/* CLICKABLE OTHER PHOTOS */
+#cms-other .other-tile {
   appearance: none;
-  border: 0;
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
   padding: 0;
+  border: 0;
+  overflow: hidden;
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: zoom-in;
+  background: #242424;
 }
 
-.other-tile img {
-  transition: transform .5s ease;
+#cms-other .other-tile img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .45s ease;
 }
 
-.other-tile:hover img {
+#cms-other .other-tile:hover img {
   transform: scale(1.035);
+}
+
+#cms-other .other-tile:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
 }
 
 .other-tile-caption {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: grid;
-  gap: 5px;
-  padding: 28px 12px 12px;
+  inset: auto 0 0;
+  z-index: 1;
+  display: block;
+  padding: 34px 12px 12px;
   color: #fff;
-  background: linear-gradient(transparent, rgba(0,0,0,.78));
+  background: linear-gradient(transparent, rgba(0,0,0,.82));
+  pointer-events: none;
 }
 
 .other-tile-title {
+  display: block;
   font-size: 14px;
 }
 
 .other-tile-caption .meta {
+  display: block;
+  margin-top: 5px;
   color: rgba(255,255,255,.72);
   font-size: 10px;
-  text-transform: none;
   line-height: 1.4;
+  text-transform: none;
 }
 
 /* POLAROID VIEWER */
-body.viewer-open {
+body.other-viewer-open {
   overflow: hidden;
 }
 
 .other-viewer[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .other-viewer {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 56px 90px 38px;
-  background: rgba(5,5,5,.94);
-  backdrop-filter: blur(8px);
+  padding: 56px 82px 34px;
+  background: rgba(5,5,5,.95);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
 }
 
 .other-viewer-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 15px;
   max-width: 100%;
   max-height: 100%;
 }
 
 .other-print {
-  display: inline-block;
   max-width: 100%;
-  padding: 12px 12px 0;
+  padding: 11px 11px 0;
   background: #f1f0ec;
   color: #111;
-  box-shadow: 0 18px 70px rgba(0,0,0,.42);
-  transform: rotate(-.35deg);
+  box-shadow: 0 18px 70px rgba(0,0,0,.45);
+  transform: rotate(-.25deg);
 }
 
 .other-print-image {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 180px;
-  min-height: 100px;
-  background: #161616;
+  background: #171717;
 }
 
 .other-print-image img {
@@ -283,58 +295,49 @@ body.viewer-open {
   width: auto;
   height: auto;
   max-width: min(76vw, 1050px);
-  max-height: 64vh;
+  max-height: 62vh;
   object-fit: contain;
 }
 
-.other-print-image img[hidden] {
-  display: none;
-}
-
 .other-print-caption {
-  padding: 18px 8px 22px;
+  padding: 17px 8px 21px;
 }
 
 .other-print-type {
+  margin-bottom: 8px;
+  color: #777;
   font: 10px monospace;
   text-transform: uppercase;
   letter-spacing: .08em;
-  color: #777;
-  margin-bottom: 8px;
 }
 
 .other-print-caption h2 {
   margin: 0;
   font-size: clamp(20px, 3vw, 32px);
-  line-height: 1.05;
+  line-height: 1.08;
   font-weight: 500;
   letter-spacing: -.04em;
 }
 
 .other-print-caption p {
-  max-width: 680px;
   margin: 9px 0 0;
+  max-width: 680px;
   color: #555;
   font-size: 13px;
   line-height: 1.5;
   white-space: pre-line;
 }
 
-.other-print-caption p[hidden] {
+.other-print-caption p:empty {
   display: none;
 }
 
 .other-print-caption a {
   display: inline-block;
-  margin-top: 14px;
+  margin-top: 13px;
   color: #222;
   font: 10px monospace;
-  text-decoration: underline;
   text-underline-offset: 3px;
-}
-
-.other-print-caption a[hidden] {
-  display: none;
 }
 
 .other-viewer-count {
@@ -349,83 +352,38 @@ body.viewer-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255,255,255,.28);
-  border-radius: 50%;
   width: 44px;
   height: 44px;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 50%;
   color: #f1f0ec;
-  background: rgba(20,20,20,.7);
-  font: 24px Arial, sans-serif;
+  background: rgba(20,20,20,.75);
+  font: 24px Arial,sans-serif;
   cursor: pointer;
-  transition: background .2s ease, border-color .2s ease;
+}
+
+.other-viewer-close {
+  top: 22px;
+  right: 24px;
+  font-size: 30px;
+}
+
+.other-viewer-prev {
+  left: 22px;
+}
+
+.other-viewer-next {
+  right: 22px;
 }
 
 .other-viewer-close:hover,
 .other-viewer-arrow:hover {
   background: #292929;
-  border-color: #aaa;
-}
-
-.other-viewer-close {
-  top: 24px;
-  right: 26px;
-  font-size: 30px;
-}
-
-.other-viewer-prev {
-  left: 24px;
-}
-
-.other-viewer-next {
-  right: 24px;
+  border-color: #888;
 }
 
 /* MOBILE */
 @media (max-width: 700px) {
-  .other-viewer {
-    padding: 60px 14px 72px;
-  }
-
-  .other-print {
-    padding: 8px 8px 0;
-    max-width: 100%;
-  }
-
-  .other-print-image img {
-    max-width: calc(100vw - 46px);
-    max-height: 62vh;
-  }
-
-  .other-print-caption {
-    padding: 14px 6px 18px;
-  }
-
-  .other-viewer-close {
-    top: 12px;
-    right: 12px;
-    width: 38px;
-    height: 38px;
-  }
-
-  .other-viewer-arrow {
-    bottom: 18px;
-    top: auto;
-    width: 42px;
-    height: 42px;
-  }
-
-  .other-viewer-prev {
-    left: calc(50% - 52px);
-  }
-
-  .other-viewer-next {
-    right: calc(50% - 52px);
-  }
-
-  .other-viewer-count {
-    margin-bottom: 2px;
-  }
-
   .hero-box {
     min-height: 70vh;
   }
@@ -445,6 +403,45 @@ body.viewer-open {
 
   .hero-meta {
     font-size: 9px;
+  }
+
+  .other-viewer {
+    padding: 58px 12px 72px;
+  }
+
+  .other-print {
+    padding: 8px 8px 0;
+  }
+
+  .other-print-image img {
+    max-width: calc(100vw - 44px);
+    max-height: 60vh;
+  }
+
+  .other-print-caption {
+    padding: 13px 6px 17px;
+  }
+
+  .other-viewer-close {
+    top: 11px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .other-viewer-arrow {
+    top: auto;
+    bottom: 17px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .other-viewer-prev {
+    left: calc(50% - 52px);
+  }
+
+  .other-viewer-next {
+    right: calc(50% - 52px);
   }
 }
 </style>
@@ -588,27 +585,6 @@ body.viewer-open {
 
     const items = data || [];
     const container = document.getElementById("cms-other");
-
-    container.innerHTML = items.length
-      ? items.map((item, index) => {
-          const image = safeUrl(item.image);
-          return `
-            <button class="tile other-tile" type="button"
-              data-other-index="${index}"
-              aria-label="Preview ${escapeHtml(item.title || "photograph")}">
-              ${image
-                ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(item.title || "")}" loading="lazy">`
-                : `<span class="ph">${escapeHtml(item.type || "Photography")}</span>`}
-              <span class="other-tile-caption">
-                <span class="other-tile-title">${escapeHtml(item.title || "Untitled")}</span>
-                ${item.caption
-                  ? `<span class="meta">${escapeHtml(item.caption)}</span>`
-                  : ""}
-              </span>
-            </button>`;
-        }).join("")
-      : '<p class="meta">No published content yet.</p>';
-
     const viewer = document.getElementById("other-viewer");
     const viewerImage = document.getElementById("other-viewer-image");
     const viewerTitle = document.getElementById("other-viewer-title");
@@ -617,76 +593,87 @@ body.viewer-open {
     const viewerCount = document.getElementById("other-viewer-count");
     const viewerLink = document.getElementById("other-viewer-link");
     const closeButton = document.getElementById("other-viewer-close");
+    let activeIndex = 0;
+    let previousFocus = null;
 
-    let activeOtherIndex = 0;
-    let previouslyFocused = null;
+    container.innerHTML = items.length
+      ? items.map((item, index) => {
+          const image = safeUrl(item.image);
+          return `
+            <button class="tile other-tile" type="button" data-other-index="${index}" aria-label="Preview ${escapeHtml(item.title || "photograph")}">
+              ${image
+                ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(item.title || "")}" loading="lazy">`
+                : `<span class="ph">${escapeHtml(item.type || "Photography")}</span>`}
+              <span class="other-tile-caption">
+                <span class="other-tile-title">${escapeHtml(item.title || "Untitled")}</span>
+                ${item.caption ? `<span class="meta">${escapeHtml(item.caption)}</span>` : ""}
+              </span>
+            </button>`;
+        }).join("")
+      : '<p class="meta">No published content yet.</p>';
 
-    function showOtherItem(index) {
+    function renderItem(index) {
       if (!items.length) return;
 
-      activeOtherIndex = (index + items.length) % items.length;
-      const item = items[activeOtherIndex];
+      activeIndex = (index + items.length) % items.length;
+      const item = items[activeIndex];
       const image = safeUrl(item.image);
       const link = safeUrl(item.link_url);
 
       viewerImage.src = image || "";
       viewerImage.alt = item.title || "Photography";
-      viewerImage.hidden = !image;
-
+      viewerImage.parentElement.hidden = !image;
       viewerTitle.textContent = item.title || "Untitled";
       viewerCaption.textContent = item.caption || "";
-      viewerCaption.hidden = !item.caption;
       viewerType.textContent = item.type || "Photography";
-
       viewerCount.textContent =
-        `${String(activeOtherIndex + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`;
+        `${String(activeIndex + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`;
 
       viewerLink.href = link || "#";
       viewerLink.hidden = !link;
     }
 
-    function openOtherViewer(index) {
-      previouslyFocused = document.activeElement;
-      showOtherItem(index);
+    function openViewer(index) {
+      previousFocus = document.activeElement;
+      renderItem(index);
       viewer.hidden = false;
-      document.body.classList.add("viewer-open");
+      document.body.classList.add("other-viewer-open");
       closeButton.focus();
     }
 
-    function closeOtherViewer() {
+    function closeViewer() {
       viewer.hidden = true;
-      document.body.classList.remove("viewer-open");
+      document.body.classList.remove("other-viewer-open");
 
-      if (previouslyFocused && typeof previouslyFocused.focus === "function") {
-        previouslyFocused.focus();
+      if (previousFocus && typeof previousFocus.focus === "function") {
+        previousFocus.focus();
       }
     }
 
     container.addEventListener("click", event => {
       const tile = event.target.closest("[data-other-index]");
-      if (tile) openOtherViewer(Number(tile.dataset.otherIndex));
+      if (tile) openViewer(Number(tile.dataset.otherIndex));
     });
 
-    closeButton.addEventListener("click", closeOtherViewer);
+    closeButton.addEventListener("click", closeViewer);
 
     document.getElementById("other-viewer-prev").addEventListener("click", () => {
-      showOtherItem(activeOtherIndex - 1);
+      renderItem(activeIndex - 1);
     });
 
     document.getElementById("other-viewer-next").addEventListener("click", () => {
-      showOtherItem(activeOtherIndex + 1);
+      renderItem(activeIndex + 1);
     });
 
     viewer.addEventListener("click", event => {
-      if (event.target === viewer) closeOtherViewer();
+      if (event.target === viewer) closeViewer();
     });
 
     document.addEventListener("keydown", event => {
       if (viewer.hidden) return;
-
-      if (event.key === "Escape") closeOtherViewer();
-      if (event.key === "ArrowLeft") showOtherItem(activeOtherIndex - 1);
-      if (event.key === "ArrowRight") showOtherItem(activeOtherIndex + 1);
+      if (event.key === "Escape") closeViewer();
+      if (event.key === "ArrowLeft") renderItem(activeIndex - 1);
+      if (event.key === "ArrowRight") renderItem(activeIndex + 1);
     });
   } catch (error) {
     console.error("Other content:", error);
@@ -708,6 +695,7 @@ body.viewer-open {
 
     if (settings && settings.hero_video && hero) {
       const videoUrl = safeUrl(settings.hero_video);
+
       if (!videoUrl) throw new Error("The hero video URL is invalid.");
 
       const video = document.createElement("video");
