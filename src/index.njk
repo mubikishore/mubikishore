@@ -9,13 +9,11 @@ layout: base.njk
       <span class="ph">[ hero still / reel ]</span>
     </div>
     <div class="hero-overlay"></div>
-
     <div class="hero-copy">
       <div class="eyebrow">{{site.tagline}}</div>
       <h1>MUBI<br>KISHORE</h1>
     </div>
   </div>
-
   <div class="hero-meta meta">
     <span>{{site.location}}</span>
     <span>Selected works · 2024—2026</span>
@@ -28,9 +26,7 @@ layout: base.njk
     <span>01 / Selected Work</span>
     <span id="project-count">Loading…</span>
   </div>
-
   <p class="intro">Films, collaborations, experiments and things made along the way.</p>
-
   <div class="work" id="cms-projects">
     <div class="row">
       <span class="meta">—</span>
@@ -46,7 +42,6 @@ layout: base.njk
     <span>02 / Store</span>
     <span>Objects / prints / editions</span>
   </div>
-
   <div class="grid store" id="cms-products">
     <p class="meta">Loading products…</p>
   </div>
@@ -57,18 +52,45 @@ layout: base.njk
     <span>03 / Other Things</span>
     <span>35mm / BTS / photography / tests</span>
   </div>
-
   <div class="grid" id="cms-other">
     <p class="meta">Loading other content…</p>
   </div>
 </section>
+
+<!-- POLAROID VIEWER -->
+<div class="other-viewer" id="other-viewer" role="dialog"
+  aria-modal="true" aria-label="Photography preview" hidden>
+  <button class="other-viewer-close" id="other-viewer-close"
+    type="button" aria-label="Close preview">×</button>
+
+  <button class="other-viewer-arrow other-viewer-prev"
+    id="other-viewer-prev" type="button" aria-label="Previous image">←</button>
+
+  <div class="other-viewer-stage">
+    <article class="other-print">
+      <div class="other-print-image">
+        <img id="other-viewer-image" alt="">
+      </div>
+      <div class="other-print-caption">
+        <div class="other-print-type" id="other-viewer-type"></div>
+        <h2 id="other-viewer-title"></h2>
+        <p id="other-viewer-caption"></p>
+        <a id="other-viewer-link" href="#" target="_blank"
+          rel="noopener noreferrer" hidden>OPEN LINK ↗</a>
+      </div>
+    </article>
+    <div class="other-viewer-count" id="other-viewer-count"></div>
+  </div>
+
+  <button class="other-viewer-arrow other-viewer-next"
+    id="other-viewer-next" type="button" aria-label="Next image">→</button>
+</div>
 
 <section class="section" id="about">
   <div class="head">
     <span>04 / About</span>
     <span>Words later</span>
   </div>
-
   <div class="about">
     <div class="about-copy">{{site.about}}</div>
     <div class="about-side">
@@ -86,14 +108,14 @@ layout: base.njk
 </footer>
 
 <style>
-  /* HERO VIDEO: full background behind the title */
+/* HERO */
 .hero {
   min-height: 700px;
   padding-top: 45px;
   padding-bottom: 16px;
 }
 
-  .hero-box {
+.hero-box {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -106,15 +128,15 @@ layout: base.njk
   background: #111;
 }
 
-  .hero-video-layer {
-    position: absolute;
-    inset: 0;
-    z-index: -2;
-    overflow: hidden;
-    background: radial-gradient(circle, #292929, #0a0a0a);
-  }
+.hero-video-layer {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background: radial-gradient(circle, #292929, #0a0a0a);
+}
 
-  .hero-video-layer video,
+.hero-video-layer video,
 .hero-video-layer img {
   display: block;
   width: 100%;
@@ -122,71 +144,309 @@ layout: base.njk
   object-fit: cover;
   object-position: center 45%;
 }
-  .hero-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, .18) 0%,
-      rgba(0, 0, 0, .08) 45%,
-      rgba(0, 0, 0, .38) 100%
-    );
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,.18) 0%,
+    rgba(0,0,0,.08) 45%,
+    rgba(0,0,0,.38) 100%
+  );
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 55px 16px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.hero-copy .eyebrow {
+  margin-bottom: 45px;
+  color: #f1f0ec;
+  text-shadow: 0 1px 12px rgba(0,0,0,.45);
+}
+
+.hero-copy h1 {
+  margin: 0;
+  color: #f1f0ec;
+  font-size: clamp(64px, 12vw, 160px);
+  line-height: .78;
+  letter-spacing: -.085em;
+  font-weight: 500;
+  text-shadow: 0 2px 24px rgba(0,0,0,.16);
+}
+
+.hero-meta {
+  gap: 12px;
+}
+
+/* OTHER CONTENT TILES */
+.other-tile {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: zoom-in;
+}
+
+.other-tile img {
+  transition: transform .5s ease;
+}
+
+.other-tile:hover img {
+  transform: scale(1.035);
+}
+
+.other-tile-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  gap: 5px;
+  padding: 28px 12px 12px;
+  color: #fff;
+  background: linear-gradient(transparent, rgba(0,0,0,.78));
+}
+
+.other-tile-title {
+  font-size: 14px;
+}
+
+.other-tile-caption .meta {
+  color: rgba(255,255,255,.72);
+  font-size: 10px;
+  text-transform: none;
+  line-height: 1.4;
+}
+
+/* POLAROID VIEWER */
+body.viewer-open {
+  overflow: hidden;
+}
+
+.other-viewer[hidden] {
+  display: none;
+}
+
+.other-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 90px 38px;
+  background: rgba(5,5,5,.94);
+  backdrop-filter: blur(8px);
+}
+
+.other-viewer-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.other-print {
+  display: inline-block;
+  max-width: 100%;
+  padding: 12px 12px 0;
+  background: #f1f0ec;
+  color: #111;
+  box-shadow: 0 18px 70px rgba(0,0,0,.42);
+  transform: rotate(-.35deg);
+}
+
+.other-print-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  min-height: 100px;
+  background: #161616;
+}
+
+.other-print-image img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(76vw, 1050px);
+  max-height: 64vh;
+  object-fit: contain;
+}
+
+.other-print-image img[hidden] {
+  display: none;
+}
+
+.other-print-caption {
+  padding: 18px 8px 22px;
+}
+
+.other-print-type {
+  font: 10px monospace;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.other-print-caption h2 {
+  margin: 0;
+  font-size: clamp(20px, 3vw, 32px);
+  line-height: 1.05;
+  font-weight: 500;
+  letter-spacing: -.04em;
+}
+
+.other-print-caption p {
+  max-width: 680px;
+  margin: 9px 0 0;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.other-print-caption p[hidden] {
+  display: none;
+}
+
+.other-print-caption a {
+  display: inline-block;
+  margin-top: 14px;
+  color: #222;
+  font: 10px monospace;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.other-print-caption a[hidden] {
+  display: none;
+}
+
+.other-viewer-count {
+  color: #aaa;
+  font: 11px monospace;
+  letter-spacing: .08em;
+}
+
+.other-viewer-close,
+.other-viewer-arrow {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  color: #f1f0ec;
+  background: rgba(20,20,20,.7);
+  font: 24px Arial, sans-serif;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.other-viewer-close:hover,
+.other-viewer-arrow:hover {
+  background: #292929;
+  border-color: #aaa;
+}
+
+.other-viewer-close {
+  top: 24px;
+  right: 26px;
+  font-size: 30px;
+}
+
+.other-viewer-prev {
+  left: 24px;
+}
+
+.other-viewer-next {
+  right: 24px;
+}
+
+/* MOBILE */
+@media (max-width: 700px) {
+  .other-viewer {
+    padding: 60px 14px 72px;
+  }
+
+  .other-print {
+    padding: 8px 8px 0;
+    max-width: 100%;
+  }
+
+  .other-print-image img {
+    max-width: calc(100vw - 46px);
+    max-height: 62vh;
+  }
+
+  .other-print-caption {
+    padding: 14px 6px 18px;
+  }
+
+  .other-viewer-close {
+    top: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .other-viewer-arrow {
+    bottom: 18px;
+    top: auto;
+    width: 42px;
+    height: 42px;
+  }
+
+  .other-viewer-prev {
+    left: calc(50% - 52px);
+  }
+
+  .other-viewer-next {
+    right: calc(50% - 52px);
+  }
+
+  .other-viewer-count {
+    margin-bottom: 2px;
+  }
+
+  .hero-box {
+    min-height: 70vh;
   }
 
   .hero-copy {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    padding: 55px 16px;
-    text-align: center;
-    pointer-events: none;
+    padding: 40px 10px;
   }
 
   .hero-copy .eyebrow {
-    margin-bottom: 45px;
-    color: #f1f0ec;
-    text-shadow: 0 1px 12px rgba(0, 0, 0, .45);
+    margin-bottom: 35px;
+    font-size: 10px;
   }
 
   .hero-copy h1 {
-    margin: 0;
-    color: #f1f0ec;
-    font-size: clamp(64px, 12vw, 160px);
-    line-height: .78;
-    letter-spacing: -.085em;
-    font-weight: 500;
-    text-shadow: 0 2px 24px rgba(0, 0, 0, .16);
+    font-size: clamp(56px, 13vw, 100px);
   }
 
   .hero-meta {
-    gap: 12px;
+    font-size: 9px;
   }
-
-  /* Responsive adjustments */
-  @media (max-width: 700px) {
-    .hero-box {
-      min-height: 70vh;
-    }
-
-    .hero-copy {
-      padding: 40px 10px;
-    }
-
-    .hero-copy .eyebrow {
-      margin-bottom: 35px;
-      font-size: 10px;
-    }
-
-    .hero-copy h1 {
-      font-size: clamp(56px, 13vw, 100px);
-    }
-
-    .hero-meta {
-      font-size: 9px;
-    }
-  }
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -316,7 +576,7 @@ layout: base.njk
     showSectionError("cms-products", "Products could not be loaded.");
   }
 
-  // OTHER CONTENT
+  // OTHER CONTENT + POLAROID VIEWER
   try {
     const { data, error } = await db
       .from("other_content")
@@ -330,24 +590,104 @@ layout: base.njk
     const container = document.getElementById("cms-other");
 
     container.innerHTML = items.length
-      ? items.map(item => {
+      ? items.map((item, index) => {
           const image = safeUrl(item.image);
-          const link = safeUrl(item.link_url);
-
-          const content = `
-            ${image
-              ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(item.title || "")}" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
-              : `<span class="ph">${escapeHtml(item.type || "Photography")}</span>`}
-            <div style="position:absolute;left:0;right:0;bottom:0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,.8));color:white">
-              <div>${escapeHtml(item.title || "")}</div>
-              ${item.caption ? `<div class="meta">${escapeHtml(item.caption)}</div>` : ""}
-            </div>`;
-
-          return link
-            ? `<a class="tile" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" style="position:relative;overflow:hidden">${content}</a>`
-            : `<article class="tile" style="position:relative;overflow:hidden">${content}</article>`;
+          return `
+            <button class="tile other-tile" type="button"
+              data-other-index="${index}"
+              aria-label="Preview ${escapeHtml(item.title || "photograph")}">
+              ${image
+                ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(item.title || "")}" loading="lazy">`
+                : `<span class="ph">${escapeHtml(item.type || "Photography")}</span>`}
+              <span class="other-tile-caption">
+                <span class="other-tile-title">${escapeHtml(item.title || "Untitled")}</span>
+                ${item.caption
+                  ? `<span class="meta">${escapeHtml(item.caption)}</span>`
+                  : ""}
+              </span>
+            </button>`;
         }).join("")
       : '<p class="meta">No published content yet.</p>';
+
+    const viewer = document.getElementById("other-viewer");
+    const viewerImage = document.getElementById("other-viewer-image");
+    const viewerTitle = document.getElementById("other-viewer-title");
+    const viewerCaption = document.getElementById("other-viewer-caption");
+    const viewerType = document.getElementById("other-viewer-type");
+    const viewerCount = document.getElementById("other-viewer-count");
+    const viewerLink = document.getElementById("other-viewer-link");
+    const closeButton = document.getElementById("other-viewer-close");
+
+    let activeOtherIndex = 0;
+    let previouslyFocused = null;
+
+    function showOtherItem(index) {
+      if (!items.length) return;
+
+      activeOtherIndex = (index + items.length) % items.length;
+      const item = items[activeOtherIndex];
+      const image = safeUrl(item.image);
+      const link = safeUrl(item.link_url);
+
+      viewerImage.src = image || "";
+      viewerImage.alt = item.title || "Photography";
+      viewerImage.hidden = !image;
+
+      viewerTitle.textContent = item.title || "Untitled";
+      viewerCaption.textContent = item.caption || "";
+      viewerCaption.hidden = !item.caption;
+      viewerType.textContent = item.type || "Photography";
+
+      viewerCount.textContent =
+        `${String(activeOtherIndex + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`;
+
+      viewerLink.href = link || "#";
+      viewerLink.hidden = !link;
+    }
+
+    function openOtherViewer(index) {
+      previouslyFocused = document.activeElement;
+      showOtherItem(index);
+      viewer.hidden = false;
+      document.body.classList.add("viewer-open");
+      closeButton.focus();
+    }
+
+    function closeOtherViewer() {
+      viewer.hidden = true;
+      document.body.classList.remove("viewer-open");
+
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") {
+        previouslyFocused.focus();
+      }
+    }
+
+    container.addEventListener("click", event => {
+      const tile = event.target.closest("[data-other-index]");
+      if (tile) openOtherViewer(Number(tile.dataset.otherIndex));
+    });
+
+    closeButton.addEventListener("click", closeOtherViewer);
+
+    document.getElementById("other-viewer-prev").addEventListener("click", () => {
+      showOtherItem(activeOtherIndex - 1);
+    });
+
+    document.getElementById("other-viewer-next").addEventListener("click", () => {
+      showOtherItem(activeOtherIndex + 1);
+    });
+
+    viewer.addEventListener("click", event => {
+      if (event.target === viewer) closeOtherViewer();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (viewer.hidden) return;
+
+      if (event.key === "Escape") closeOtherViewer();
+      if (event.key === "ArrowLeft") showOtherItem(activeOtherIndex - 1);
+      if (event.key === "ArrowRight") showOtherItem(activeOtherIndex + 1);
+    });
   } catch (error) {
     console.error("Other content:", error);
     showSectionError("cms-other", "Other content could not be loaded.");
@@ -368,7 +708,6 @@ layout: base.njk
 
     if (settings && settings.hero_video && hero) {
       const videoUrl = safeUrl(settings.hero_video);
-
       if (!videoUrl) throw new Error("The hero video URL is invalid.");
 
       const video = document.createElement("video");
