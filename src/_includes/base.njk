@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -9,6 +9,10 @@
   <style>
     * {
       box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -31,7 +35,8 @@
       padding: 18px 22px;
       display: flex;
       justify-content: space-between;
-      z-index: 9;
+      align-items: center;
+      z-index: 20;
       mix-blend-mode: difference;
     }
 
@@ -46,22 +51,38 @@
       font: 12px monospace;
     }
 
+    nav a:hover {
+      opacity: .6;
+    }
+
+    /* HOMEPAGE HERO */
+
     .hero {
       min-height: 100vh;
       padding: 120px 22px 24px;
+      display: flex;
+      flex-direction: column;
     }
 
     .hero-box {
-      height: 75vh;
+      position: relative;
+      flex: 1;
+      min-height: 75vh;
       border: 1px solid #292929;
       display: flex;
       align-items: center;
       justify-content: center;
       background: radial-gradient(circle, #292929, #0a0a0a);
+      overflow: hidden;
+      isolation: isolate;
     }
 
     .hero-copy {
+      position: relative;
+      z-index: 2;
+      width: 100%;
       text-align: center;
+      padding: 35px 16px;
     }
 
     .eyebrow,
@@ -73,25 +94,55 @@
     }
 
     .hero h1 {
+      position: relative;
+      z-index: 3;
       font-size: clamp(50px, 10vw, 140px);
       line-height: .8;
       letter-spacing: -.08em;
       font-weight: 500;
+      margin: 70px 0;
+    }
+
+    .hero-media {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: min(55vh, 650px);
+      overflow: hidden;
+      background: #151515;
+    }
+
+    .hero-media video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .hero-media .ph {
+      display: block;
+      padding: 20px;
     }
 
     .hero-meta {
       display: flex;
       justify-content: space-between;
+      gap: 16px;
       padding-top: 14px;
     }
 
+    /* GENERAL SECTIONS */
+
     .section {
       padding: 110px 22px 70px;
+      scroll-margin-top: 60px;
     }
 
     .head {
       display: flex;
       justify-content: space-between;
+      gap: 20px;
       border-bottom: 1px solid #292929;
       padding-bottom: 12px;
       margin-bottom: 28px;
@@ -105,15 +156,24 @@
       letter-spacing: -.05em;
     }
 
+    /* SELECTED WORK */
+
     .work {
       border: 1px solid #292929;
     }
 
     .row {
       display: grid;
-      grid-template-columns: 90px 1fr 180px 25px;
+      grid-template-columns: 90px minmax(0, 1fr) 180px 25px;
+      align-items: center;
+      gap: 10px;
       padding: 17px 14px;
       border-bottom: 1px solid #292929;
+      transition: background .2s ease;
+    }
+
+    .row:last-child {
+      border-bottom: 0;
     }
 
     .row:hover {
@@ -128,6 +188,8 @@
       color: #777;
     }
 
+    /* GRIDS */
+
     .grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -136,14 +198,25 @@
     }
 
     .tile {
+      position: relative;
       aspect-ratio: 1;
+      min-width: 0;
       background: #151515;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
+    }
+
+    .tile img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     /* STORE */
+
     .grid.store {
       grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 380px));
       gap: 14px;
@@ -206,6 +279,7 @@
     }
 
     /* ABOUT */
+
     .about {
       display: grid;
       grid-template-columns: 1.4fr .6fr;
@@ -224,6 +298,7 @@
       color: #999;
       text-transform: uppercase;
       line-height: 1.8;
+      overflow-wrap: anywhere;
     }
 
     footer {
@@ -235,6 +310,7 @@
     }
 
     /* PROJECT PAGE */
+
     .project {
       padding: 130px 22px 70px;
       min-width: 0;
@@ -300,6 +376,8 @@
       white-space: pre-line;
     }
 
+    /* MOBILE */
+
     @media (max-width: 700px) {
       header {
         padding: 14px;
@@ -311,7 +389,30 @@
       }
 
       .hero {
+        min-height: 100svh;
         padding: 90px 14px 14px;
+      }
+
+      .hero-box {
+        min-height: 70vh;
+      }
+
+      .hero-copy {
+        padding: 25px 10px;
+      }
+
+      .hero h1 {
+        font-size: clamp(48px, 12vw, 90px);
+        margin: 45px 0;
+      }
+
+      .hero-media {
+        height: 40vh;
+      }
+
+      .hero-meta {
+        flex-wrap: wrap;
+        gap: 8px 16px;
       }
 
       .section,
@@ -321,7 +422,8 @@
       }
 
       .row {
-        grid-template-columns: 45px 1fr 20px;
+        grid-template-columns: 45px minmax(0, 1fr) 20px;
+        gap: 8px;
       }
 
       .row .date {
@@ -347,6 +449,7 @@
 
       .about {
         grid-template-columns: 1fr;
+        gap: 28px;
       }
 
       .hero-project {
@@ -363,15 +466,22 @@
       }
 
       footer {
-        padding-left: 14px;
-        padding-right: 14px;
-        display: block;
+        padding: 60px 14px 24px;
       }
     }
 
     @media (max-width: 380px) {
+      nav {
+        gap: 7px;
+        font-size: 9px;
+      }
+
       .grid.store {
         grid-template-columns: minmax(0, 1fr);
+      }
+
+      .head {
+        font-size: 10px;
       }
     }
   </style>
