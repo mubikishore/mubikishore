@@ -1,3 +1,4 @@
+
 ---
 title: MUBIKISHORE
 layout: base.njk
@@ -89,7 +90,7 @@ layout: base.njk
   /* HERO: VIDEO BACKGROUND */
   .hero {
     min-height: auto;
-    padding-top: 100px;
+    padding-top: 25px;
     padding-bottom: 16px;
   }
 
@@ -171,7 +172,7 @@ layout: base.njk
   /* RESPONSIVE */
   @media (max-width: 700px) {
     .hero {
-      padding-top: 82px;
+      padding-top: 25px;
       padding-bottom: 12px;
     }
 
@@ -253,9 +254,18 @@ layout: base.njk
     document.getElementById("project-count").textContent =
       "Database unavailable";
 
-    showSectionError("cms-projects", "Could not connect to the content database.");
-    showSectionError("cms-products", "Could not connect to the content database.");
-    showSectionError("cms-other", "Could not connect to the content database.");
+    showSectionError(
+      "cms-projects",
+      "Could not connect to the content database."
+    );
+    showSectionError(
+      "cms-products",
+      "Could not connect to the content database."
+    );
+    showSectionError(
+      "cms-other",
+      "Could not connect to the content database."
+    );
 
     return;
   }
