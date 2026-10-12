@@ -23,20 +23,15 @@ permalink: /project.html
 <style>
 .project-videos {
   margin-top: 40px;
-}
-
-.project-video-main {
-  margin-bottom: 32px;
-}
-
-.project-video-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 28px 16px;
+  align-items: start;
 }
 
 .project-video-item {
   min-width: 0;
+  width: 100%;
 }
 
 .project-video-frame {
@@ -48,32 +43,23 @@ permalink: /project.html
 }
 
 .project-video-item.instagram .project-video-frame {
-  width: min(100%, 400px);
-  aspect-ratio: 9 / 16;
+  aspect-ratio: auto;
   overflow: visible;
   background: transparent;
 }
 
 .project-video-frame iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.project-video-item.instagram .project-video-frame iframe {
-  position: static;
   display: block;
   width: 100%;
   height: 100%;
+  border: 0;
 }
 
 .project-video-item.instagram blockquote.instagram-media {
   margin: 0 !important;
   width: 100% !important;
   min-width: 0 !important;
-  max-width: 400px !important;
+  max-width: 100% !important;
 }
 
 .project-video-title {
@@ -90,13 +76,9 @@ permalink: /project.html
 }
 
 @media (max-width: 700px) {
-  .project-video-grid {
+  .project-videos {
     grid-template-columns: 1fr;
     gap: 24px;
-  }
-
-  .project-video-main {
-    margin-bottom: 24px;
   }
 }
 </style>
@@ -106,7 +88,7 @@ permalink: /project.html
 
 <script>
 (async function () {
-  const slug = new URLSearchParams(window.location.search).get("slug");
+  const slug = new URLSearchParams(location.search).get("slug");
 
   const title = document.getElementById("project-title");
   const meta = document.getElementById("project-meta");
@@ -181,8 +163,6 @@ permalink: /project.html
     }
   }
 
-  // Detect the platform from the URL when an older
-  // saved video has no platform property.
   function normalizeVideos(value) {
     if (typeof value === "string") {
       try {
@@ -203,6 +183,7 @@ permalink: /project.html
         ? item.platform
         : null;
 
+      // Detect the platform from the URL if not saved.
       if (platform !== "instagram" && platform !== "youtube") {
         try {
           const host = new URL(url).hostname.toLowerCase();
@@ -227,16 +208,13 @@ permalink: /project.html
     }).filter(item => item.url.trim());
   }
 
-  function makeVideo(item, index, main = false) {
+  function makeVideo(item, index) {
     const wrapper = document.createElement("article");
+    wrapper.className = "project-video-item";
 
-    wrapper.className = "project-video-item" +
-      (main ? " project-video-main" : "");
-
-    const platform = item.platform;
     let embedUrl = null;
 
-    if (platform === "instagram") {
+    if (item.platform === "instagram") {
       embedUrl = instagramUrl(item.url);
       wrapper.classList.add("instagram");
     } else {
@@ -247,7 +225,7 @@ permalink: /project.html
       }
     }
 
-    if (embedUrl && platform === "instagram") {
+    if (embedUrl && item.platform === "instagram") {
       const frame = document.createElement("div");
       frame.className = "project-video-frame";
 
@@ -256,13 +234,13 @@ permalink: /project.html
       blockquote.setAttribute("data-instgrm-permalink", embedUrl);
       blockquote.setAttribute("data-instgrm-version", "14");
       blockquote.style.cssText =
-        "background:transparent;border:0;margin:0;width:100%;max-width:400px;";
+        "background:transparent;border:0;margin:0;width:100%;max-width:100%;";
 
       const fallback = document.createElement("a");
       fallback.href = embedUrl;
       fallback.target = "_blank";
       fallback.rel = "noopener noreferrer";
-      fallback.textContent = "View this Reel on Instagram ↗";
+      fallback.textContent = "View Reel on Instagram ↗";
 
       blockquote.appendChild(fallback);
       frame.appendChild(blockquote);
@@ -274,8 +252,7 @@ permalink: /project.html
 
       const iframe = document.createElement("iframe");
       iframe.src = embedUrl;
-      iframe.title = item.title ||
-        (title.textContent + " video " + (index + 1));
+      iframe.title = item.title || (title.textContent + " video " + (index + 1));
       iframe.loading = "lazy";
       iframe.allow =
         "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
@@ -291,7 +268,7 @@ permalink: /project.html
       link.href = item.url;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      link.textContent = platform === "instagram"
+      link.textContent = item.platform === "instagram"
         ? "VIEW REEL ON INSTAGRAM ↗"
         : "WATCH VIDEO ↗";
 
@@ -308,15 +285,9 @@ permalink: /project.html
     return wrapper;
   }
 
-  function processInstagramEmbeds() {
-    if (window.instgrm?.Embeds) {
-      window.instgrm.Embeds.process();
-    }
-  }
-
   function loadInstagramScript() {
     if (window.instgrm?.Embeds) {
-      processInstagramEmbeds();
+      window.instgrm.Embeds.process();
       return;
     }
 
@@ -326,7 +297,7 @@ permalink: /project.html
     script.id = "instagram-embed-script";
     script.src = "https://www.instagram.com/embed.js";
     script.async = true;
-    script.onload = processInstagramEmbeds;
+    script.onload = () => window.instgrm?.Embeds?.process();
 
     document.body.appendChild(script);
   }
@@ -353,9 +324,7 @@ permalink: /project.html
 
     document.title = data.title + " — MUBIKISHORE";
     title.textContent = data.title;
-    meta.textContent = [data.date, data.role]
-      .filter(Boolean)
-      .join(" · ");
+    meta.textContent = [data.date, data.role].filter(Boolean).join(" · ");
 
     if (data.hero) {
       hero.innerHTML =
@@ -366,24 +335,16 @@ permalink: /project.html
     }
 
     description.textContent = data.description || "";
-
-    if (!data.description) {
-      description.remove();
-    }
+    if (!data.description) description.remove();
 
     let videos = normalizeVideos(data.videos);
 
-    // Support the existing single-video field.
-    // Detect Instagram URLs instead of assuming YouTube.
+    // Preserve older projects using the single video field.
     if (data.video && data.video.trim()) {
       const legacyUrl = data.video.trim();
 
-      const alreadyIncluded = videos.some(
-        item => item.url.trim() === legacyUrl
-      );
-
-      if (!alreadyIncluded) {
-        let legacyPlatform = "youtube";
+      if (!videos.some(item => item.url.trim() === legacyUrl)) {
+        let platform = "youtube";
 
         try {
           const host = new URL(legacyUrl).hostname.toLowerCase();
@@ -392,14 +353,14 @@ permalink: /project.html
             host === "instagram.com" ||
             host.endsWith(".instagram.com")
           ) {
-            legacyPlatform = "instagram";
+            platform = "instagram";
           }
         } catch {}
 
         videos.unshift({
           title: "Main Film",
           url: legacyUrl,
-          platform: legacyPlatform
+          platform
         });
       }
     }
@@ -407,20 +368,10 @@ permalink: /project.html
     if (videos.length) {
       videosContainer.replaceChildren();
 
-      videosContainer.appendChild(
-        makeVideo(videos[0], 0, true)
-      );
-
-      if (videos.length > 1) {
-        const grid = document.createElement("div");
-        grid.className = "project-video-grid";
-
-        videos.slice(1).forEach((item, index) => {
-          grid.appendChild(makeVideo(item, index + 1));
-        });
-
-        videosContainer.appendChild(grid);
-      }
+      // Every video goes into the same two-column grid.
+      videos.forEach((item, index) => {
+        videosContainer.appendChild(makeVideo(item, index));
+      });
 
       if (videos.some(item => item.platform === "instagram")) {
         loadInstagramScript();
