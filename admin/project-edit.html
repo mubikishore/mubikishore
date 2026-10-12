@@ -7,73 +7,21 @@
 <title>Project — MUBIKISHORE</title>
 <link rel="stylesheet" href="/admin/styles.css">
 <style>
-.image-preview-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:14px;
-  margin-top:14px;
-}
-.image-card {
-  border:1px solid #444;
-  padding:10px;
-  min-width:0;
-}
-.image-card img {
-  display:block;
-  width:100%;
-  height:130px;
-  object-fit:cover;
-  background:#222;
-}
-.image-card p {
-  font-size:12px;
-  overflow-wrap:anywhere;
-  color:#aaa;
-}
-.image-actions {
-  display:flex;
-  gap:8px;
-  align-items:center;
-  margin-top:10px;
-}
-.remove-image {
-  background:#642d2d;
-  color:white;
-  border:0;
-  padding:8px 10px;
-  cursor:pointer;
-}
-.preview-label {
-  font-size:11px;
-  letter-spacing:1px;
-  margin-top:18px;
-  color:#aaa;
-}
-.help-text {
-  font-size:12px;
-  color:#aaa;
-  margin-top:8px;
-}
-.video-entry {
-  border:1px solid #444;
-  padding:16px;
-  margin:12px 0;
-}
-.video-entry .field {
-  margin-bottom:12px;
-}
-.video-entry-actions {
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-.video-entry-actions button {
-  cursor:pointer;
-}
+.image-preview-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-top:14px; }
+.image-card { border:1px solid #444; padding:10px; min-width:0; }
+.image-card img { display:block; width:100%; height:130px; object-fit:cover; background:#222; }
+.image-card p { font-size:12px; overflow-wrap:anywhere; color:#aaa; }
+.image-actions { display:flex; gap:8px; align-items:center; margin-top:10px; }
+.remove-image { background:#642d2d; color:white; border:0; padding:8px 10px; cursor:pointer; }
+.preview-label { font-size:11px; letter-spacing:1px; margin-top:18px; color:#aaa; }
+.help-text { font-size:12px; color:#aaa; margin-top:8px; }
+.video-entry { border:1px solid #444; padding:16px; margin:12px 0; }
+.video-entry .field { margin-bottom:12px; }
+.video-entry-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.video-entry-actions button { cursor:pointer; }
 </style>
 </head>
 <body>
-
 <header class="top">
   <div class="logo">MUBIKISHORE</div>
   <div class="top-right">
@@ -81,7 +29,6 @@
     <button class="logout" id="logout">SIGN OUT</button>
   </div>
 </header>
-
 <div class="layout">
   <aside class="sidebar">
     <div class="section-label">CONTENT</div>
@@ -95,44 +42,20 @@
     <div class="section-label">SYSTEM</div>
     <button class="nav-button" data-nav="settings">Settings</button>
   </aside>
-
   <main class="content">
     <div class="eyebrow">CONTENT / PROJECT</div>
     <h1 id="heading">ADD PROJECT.</h1>
-
     <div class="form">
       <div class="grid2">
-        <div class="field">
-          <label for="title">TITLE</label>
-          <input id="title">
-        </div>
-        <div class="field">
-          <label for="slug">SLUG</label>
-          <input id="slug">
-        </div>
+        <div class="field"><label for="title">TITLE</label><input id="title"></div>
+        <div class="field"><label for="slug">SLUG</label><input id="slug"></div>
       </div>
-
       <div class="grid2">
-        <div class="field">
-          <label for="date">DATE</label>
-          <input id="date" type="date">
-        </div>
-        <div class="field">
-          <label for="year">YEAR</label>
-          <input id="year" type="number">
-        </div>
+        <div class="field"><label for="date">DATE</label><input id="date" type="date"></div>
+        <div class="field"><label for="year">YEAR</label><input id="year" type="number"></div>
       </div>
-
-      <div class="field">
-        <label for="role">ROLE</label>
-        <input id="role">
-      </div>
-
-      <div class="field">
-        <label for="description">DESCRIPTION</label>
-        <textarea id="description"></textarea>
-      </div>
-
+      <div class="field"><label for="role">ROLE</label><input id="role"></div>
+      <div class="field"><label for="description">DESCRIPTION</label><textarea id="description"></textarea></div>
       <div class="grid2">
         <div class="field">
           <label for="heroFile">HERO IMAGE</label>
@@ -140,68 +63,43 @@
           <p class="help-text">Upload a new image to replace the current one.</p>
           <div id="heroPreview"></div>
         </div>
-
         <div class="field">
           <label for="video">VIDEO URL (LEGACY)</label>
           <input id="video">
-          <p class="help-text">
-            Existing single-video link. Keep it for older projects.
-            It will appear first if provided.
-          </p>
+          <p class="help-text">Existing single-video link. Leave unchanged for older projects. If additional videos are added below, this video will appear first on the project page.</p>
         </div>
       </div>
-
       <div class="field">
         <label>ADDITIONAL PROJECT VIDEOS</label>
-        <p class="help-text">
-          Add YouTube links and optional titles. Use UP and DOWN
-          to change the order, or REMOVE to delete a video.
-        </p>
+        <p class="help-text">Paste YouTube links and add optional titles. Use the UP and DOWN buttons to change the order. Choose YouTube or Instagram for each video. YouTube appears widescreen; Instagram Reels appear vertical where embedding is supported.</p>
         <div id="videosEditor"></div>
-        <button type="button" class="btn" id="addVideo">
-          + ADD ANOTHER VIDEO
-        </button>
+        <button type="button" class="btn" id="addVideo">+ ADD ANOTHER VIDEO</button>
       </div>
-
-      <div class="field">
-        <label for="credits">CREDITS</label>
-        <textarea id="credits"></textarea>
-      </div>
-
+      <div class="field"><label for="credits">CREDITS</label><textarea id="credits"></textarea></div>
       <div class="field">
         <label for="galleryFiles">GALLERY</label>
         <input id="galleryFiles" type="file" accept="image/*" multiple>
-        <p class="help-text">
-          Add images or remove existing gallery images below.
-        </p>
+        <p class="help-text">Add images or remove existing gallery images below.</p>
         <div id="galleryPreview" class="image-preview-grid"></div>
       </div>
-
       <div class="field">
         <label>STATUS</label>
-        <label>
-          <input id="published" type="checkbox" checked> Published
-        </label>
+        <label><input id="published" type="checkbox" checked> Published</label>
       </div>
-
       <button id="save" class="btn primary">SAVE PROJECT</button>
       <button class="btn" id="cancel">CANCEL</button>
       <div id="msg" class="notice" style="display:none"></div>
     </div>
   </main>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/admin/config.js"></script>
 <script src="/admin/app.js"></script>
-
 <script>
 const projectId = new URLSearchParams(location.search).get("id");
-
 let hero = "";
 let gallery = [];
 let videos = [];
-
 const el = id => document.getElementById(id);
 
 function showMessage(message) {
@@ -211,67 +109,60 @@ function showMessage(message) {
 
 function normalizeGallery(value) {
   if (typeof value === "string") {
-    try {
-      value = JSON.parse(value);
-    } catch {
-      return [];
-    }
+    try { value = JSON.parse(value); } catch { return []; }
   }
-
   if (!Array.isArray(value)) return [];
-
   return value.map(item => {
     if (typeof item === "string") return { image: item };
     if (item && typeof item.image === "string") return { ...item };
-    if (item && typeof item.url === "string") {
-      return { ...item, image: item.url };
-    }
+    if (item && typeof item.url === "string") return { ...item, image: item.url };
     return null;
   }).filter(item => item && item.image);
 }
 
+function detectPlatform(value) {
+  try {
+    const host = new URL(value).hostname.toLowerCase();
+    return host === "instagram.com" || host.endsWith(".instagram.com")
+      ? "instagram"
+      : "youtube";
+  } catch {
+    return "youtube";
+  }
+}
+
 function normalizeVideos(value) {
   if (typeof value === "string") {
-    try {
-      value = JSON.parse(value);
-    } catch {
-      return [];
-    }
+    try { value = JSON.parse(value); } catch { return []; }
   }
-
   if (!Array.isArray(value)) return [];
-
-  return value.map(item => {
-    if (typeof item === "string") {
-      return { title: "", url: item };
-    }
-
-    return {
-      title: String(item?.title || ""),
-      url: String(item?.url || "")
-    };
-  }).filter(item => item.url);
+  return value.map(item => typeof item === "string"
+    ? { title: "", url: item, platform: detectPlatform(item) }
+    : {
+        title: String(item?.title || ""),
+        url: String(item?.url || ""),
+        platform: item?.platform === "instagram" || item?.platform === "youtube"
+          ? item.platform
+          : detectPlatform(item?.url || "")
+      }
+  ).filter(item => item.url);
 }
 
 function youtubeId(value) {
   try {
-    const url = new URL(value);
-    const host = url.hostname.toLowerCase();
+    const u = new URL(value);
+    const host = u.hostname.toLowerCase();
     let id = "";
 
     if (host === "youtu.be" || host === "www.youtu.be") {
-      id = url.pathname.split("/")[1];
+      id = u.pathname.split("/")[1];
     } else if ([
-      "youtube.com",
-      "www.youtube.com",
-      "m.youtube.com",
-      "youtube-nocookie.com",
-      "www.youtube-nocookie.com"
+      "youtube.com", "www.youtube.com", "m.youtube.com",
+      "youtube-nocookie.com", "www.youtube-nocookie.com"
     ].includes(host)) {
-      if (url.pathname === "/watch") {
-        id = url.searchParams.get("v");
-      } else if (/^\/(embed|shorts|live)\//.test(url.pathname)) {
-        id = url.pathname.split("/")[2];
+      if (u.pathname === "/watch") id = u.searchParams.get("v");
+      else if (/^\/(embed|shorts|live)\//.test(u.pathname)) {
+        id = u.pathname.split("/")[2];
       }
     }
 
@@ -279,6 +170,23 @@ function youtubeId(value) {
   } catch {
     return null;
   }
+}
+
+function instagramUrl(value) {
+  try {
+    const u = new URL(value);
+    const host = u.hostname.toLowerCase();
+    if (host !== "instagram.com" && !host.endsWith(".instagram.com")) return false;
+    return /^\/(reel|reels|p|tv)\/[A-Za-z0-9_-]+\/?$/.test(u.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function validVideo(item) {
+  return item.platform === "instagram"
+    ? instagramUrl(item.url)
+    : !!youtubeId(item.url);
 }
 
 function renderVideos() {
@@ -292,6 +200,34 @@ function renderVideos() {
     const heading = document.createElement("div");
     heading.className = "preview-label";
     heading.textContent = "VIDEO " + (index + 1);
+
+    const platformField = document.createElement("div");
+    platformField.className = "field";
+
+    const platformLabel = document.createElement("label");
+    platformLabel.textContent = "PLATFORM";
+
+    const platformSelect = document.createElement("select");
+
+    [
+      ["youtube", "YouTube"],
+      ["instagram", "Instagram Reel / Video"]
+    ].forEach(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      platformSelect.appendChild(option);
+    });
+
+    platformSelect.value = item.platform || detectPlatform(item.url);
+    platformSelect.addEventListener("change", () => {
+      item.platform = platformSelect.value;
+      urlInput.placeholder = item.platform === "instagram"
+        ? "https://www.instagram.com/reel/SHORTCODE/"
+        : "https://www.youtube.com/watch?v=...";
+    });
+
+    platformField.append(platformLabel, platformSelect);
 
     const titleField = document.createElement("div");
     titleField.className = "field";
@@ -312,11 +248,13 @@ function renderVideos() {
     urlField.className = "field";
 
     const urlLabel = document.createElement("label");
-    urlLabel.textContent = "YOUTUBE URL";
+    urlLabel.textContent = "VIDEO URL";
 
     const urlInput = document.createElement("input");
     urlInput.type = "url";
-    urlInput.placeholder = "https://www.youtube.com/watch?v=...";
+    urlInput.placeholder = item.platform === "instagram"
+      ? "https://www.instagram.com/reel/SHORTCODE/"
+      : "https://www.youtube.com/watch?v=...";
     urlInput.value = item.url;
     urlInput.addEventListener("input", () => {
       item.url = urlInput.value;
@@ -327,40 +265,40 @@ function renderVideos() {
     const actions = document.createElement("div");
     actions.className = "video-entry-actions";
 
-    function addAction(label, callback, disabled = false) {
+    function action(label, fn, disabled = false) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "btn";
       button.textContent = label;
       button.disabled = disabled;
-      button.addEventListener("click", callback);
+      button.addEventListener("click", fn);
       actions.appendChild(button);
     }
 
-    addAction("↑ UP", () => {
+    action("↑ UP", () => {
       [videos[index - 1], videos[index]] =
         [videos[index], videos[index - 1]];
       renderVideos();
     }, index === 0);
 
-    addAction("↓ DOWN", () => {
+    action("↓ DOWN", () => {
       [videos[index + 1], videos[index]] =
         [videos[index], videos[index + 1]];
       renderVideos();
     }, index === videos.length - 1);
 
-    addAction("REMOVE", () => {
+    action("REMOVE", () => {
       videos.splice(index, 1);
       renderVideos();
     });
 
-    card.append(heading, titleField, urlField, actions);
+    card.append(heading, platformField, titleField, urlField, actions);
     container.appendChild(card);
   });
 }
 
 el("addVideo").addEventListener("click", () => {
-  videos.push({ title: "", url: "" });
+  videos.push({ title: "", url: "", platform: "youtube" });
   renderVideos();
 });
 
@@ -390,7 +328,6 @@ function createImageCard(url, label, onRemove) {
 
   actions.appendChild(remove);
   card.append(img, name, actions);
-
   return card;
 }
 
@@ -410,14 +347,11 @@ function renderHero() {
   label.className = "preview-label";
   label.textContent = "CURRENT HERO IMAGE";
 
-  container.append(
-    label,
-    createImageCard(hero, "Current hero image", () => {
-      hero = "";
-      el("heroFile").value = "";
-      renderHero();
-    })
-  );
+  container.append(label, createImageCard(hero, "Current hero image", () => {
+    hero = "";
+    el("heroFile").value = "";
+    renderHero();
+  }));
 }
 
 function renderGallery() {
@@ -433,12 +367,14 @@ function renderGallery() {
   container.className = "image-preview-grid";
 
   gallery.forEach((item, index) => {
-    container.appendChild(
-      createImageCard(item.image, "Gallery image " + (index + 1), () => {
+    container.appendChild(createImageCard(
+      item.image,
+      "Gallery image " + (index + 1),
+      () => {
         gallery.splice(index, 1);
         renderGallery();
-      })
-    );
+      }
+    ));
   });
 }
 
@@ -449,15 +385,13 @@ async function upload(file) {
 
   const path = "projects/" + crypto.randomUUID() + "." + extension;
 
-  const result = await MUBI_SUPABASE
-    .storage
+  const result = await MUBI_SUPABASE.storage
     .from(MUBI_CONFIG.MEDIA_BUCKET)
     .upload(path, file);
 
   if (result.error) throw result.error;
 
-  return MUBI_SUPABASE
-    .storage
+  return MUBI_SUPABASE.storage
     .from(MUBI_CONFIG.MEDIA_BUCKET)
     .getPublicUrl(path).data.publicUrl;
 }
@@ -493,7 +427,6 @@ async function loadProject() {
   });
 
   el("published").checked = project.published !== false;
-
   hero = project.hero || "";
   gallery = normalizeGallery(project.gallery);
   videos = normalizeVideos(project.videos);
@@ -526,26 +459,26 @@ el("save").addEventListener("click", async () => {
 
     const cleanVideos = videos.map(item => ({
       title: item.title.trim(),
-      url: item.url.trim()
+      url: item.url.trim(),
+      platform: item.platform || detectPlatform(item.url)
     }));
 
     for (const item of cleanVideos) {
       if (!item.url) {
-        throw new Error(
-          "Every added video needs a YouTube URL. Remove empty entries."
-        );
+        throw new Error("Every added video needs a URL. Remove empty entries.");
       }
 
-      if (!youtubeId(item.url)) {
-        throw new Error("Invalid YouTube URL: " + item.url);
+      if (!validVideo(item)) {
+        throw new Error(
+          "Check the " +
+          (item.platform === "instagram" ? "Instagram Reel/post URL" : "YouTube URL") +
+          ": " + item.url
+        );
       }
     }
 
     const heroFile = el("heroFile").files[0];
-
-    if (heroFile) {
-      hero = await upload(heroFile);
-    }
+    if (heroFile) hero = await upload(heroFile);
 
     const galleryFiles = [...el("galleryFiles").files];
 
@@ -570,13 +503,8 @@ el("save").addEventListener("click", async () => {
     };
 
     const result = projectId
-      ? await MUBI_SUPABASE
-          .from("projects")
-          .update(payload)
-          .eq("id", projectId)
-      : await MUBI_SUPABASE
-          .from("projects")
-          .insert(payload);
+      ? await MUBI_SUPABASE.from("projects").update(payload).eq("id", projectId)
+      : await MUBI_SUPABASE.from("projects").insert(payload);
 
     if (result.error) throw result.error;
 
