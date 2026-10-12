@@ -1,157 +1,357 @@
----
-layout: base.njk
-title: Project
-permalink: /project.html
----
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ title or site.name }}</title>
 
-<main class="project" id="project">
-  <a class="meta" href="/#work">← Back to work</a>
-  <h1 id="project-title">Loading project…</h1>
-  <div class="meta project-meta" id="project-meta"></div>
-  <div class="hero-project" id="project-hero"></div>
-  <p class="intro" id="project-description"></p>
-  <section class="project-videos" id="project-videos"></section>
-  <div class="gallery" id="project-gallery"></div>
-  <div class="project-credits" id="project-credits"></div>
-</main>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-<footer>
-  <span>MUBIKISHORE</span>
-  <span>© 2026</span>
-</footer>
+    html {
+      scroll-behavior: smooth;
+    }
 
-<style>
-/* PROJECT HEADER */
-.project {
-  padding: 150px 22px 70px;
-  min-width: 0;
-}
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      color: #f1f0ec;
+      font: 14px Arial, sans-serif;
+    }
 
-.project > .meta:first-child {
-  display: inline-block;
-  margin-bottom: 30px;
-}
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
 
-.project h1 {
-  max-width: 1100px;
-  margin: 0;
-  font-size: clamp(42px, 7vw, 100px);
-  line-height: .94;
-  letter-spacing: -.065em;
-  font-weight: 500;
-  overflow-wrap: anywhere;
-}
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 18px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+      mix-blend-mode: difference;
+    }
 
-.project-meta {
-  margin-top: 18px;
-  line-height: 1.7;
-}
+    .brand {
+      font-weight: 600;
+    }
 
-.hero-project {
-  width: 100%;
-  margin-top: 42px;
-  background: #0a0a0a;
-  overflow: hidden;
-}
+    nav {
+      display: flex;
+      gap: 20px;
+      text-transform: uppercase;
+      font: 12px monospace;
+    }
 
-.hero-project img {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: 78vh;
-  object-fit: contain;
-  object-position: center;
-  margin: 0 auto;
-}
+    nav a:hover {
+      opacity: .6;
+    }
 
-.project .intro {
-  max-width: 760px;
-  margin: 30px 0 0;
-  font-size: clamp(20px, 2.5vw, 32px);
-  line-height: 1.25;
-  letter-spacing: -.035em;
-}
+    /* HOMEPAGE HERO */
 
-/* VIDEO GRID */
-.project-videos {
+    .hero {
+      min-height: 100vh;
+      padding: 120px 22px 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero-box {
+      position: relative;
+      flex: 1;
+      min-height: 75vh;
+      border: 1px solid #292929;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, #292929, #0a0a0a);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      text-align: center;
+      padding: 35px 16px;
+    }
+
+    .eyebrow,
+    .meta,
+    .ph {
+      font: 11px monospace;
+      color: #999;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      position: relative;
+      z-index: 3;
+      font-size: clamp(50px, 10vw, 140px);
+      line-height: .8;
+      letter-spacing: -.08em;
+      font-weight: 500;
+      margin: 70px 0;
+    }
+
+    .hero-media {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: min(55vh, 650px);
+      overflow: hidden;
+      background: #151515;
+    }
+
+    .hero-media video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .hero-media .ph {
+      display: block;
+      padding: 20px;
+    }
+
+    .hero-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 14px;
+    }
+
+    /* GENERAL SECTIONS */
+
+    .section {
+      padding: 110px 22px 70px;
+      scroll-margin-top: 60px;
+    }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid #292929;
+      padding-bottom: 12px;
+      margin-bottom: 28px;
+      font: 12px monospace;
+      text-transform: uppercase;
+    }
+
+    .intro {
+      font-size: clamp(28px, 4vw, 58px);
+      max-width: 850px;
+      letter-spacing: -.05em;
+    }
+
+    /* SELECTED WORK */
+
+    .work {
+      border: 1px solid #292929;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 90px minmax(0, 1fr) 180px 25px;
+      align-items: center;
+      gap: 10px;
+      padding: 17px 14px;
+      border-bottom: 1px solid #292929;
+      transition: background .2s ease;
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .row:hover {
+      background: #151515;
+    }
+
+    .title {
+      font-size: clamp(18px, 2.2vw, 29px);
+    }
+
+    .meta {
+      color: #777;
+    }
+
+    /* GRIDS */
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      background: #292929;
+    }
+
+    .tile {
+      position: relative;
+      aspect-ratio: 1;
+      min-width: 0;
+      background: #151515;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .tile img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* STORE */
+
+    .grid.store {
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 380px));
+      gap: 14px;
+      align-items: start;
+      background: transparent;
+    }
+
+    .store .product {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      align-self: start;
+      background: #121212;
+      border: 1px solid #292929;
+      transition: border-color .25s ease, transform .25s ease;
+    }
+
+    .store a.product:hover {
+      border-color: #777;
+      transform: translateY(-3px);
+    }
+
+    .product-img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #191919;
+    }
+
+    .product-img img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-info {
+      padding: 16px;
+    }
+
+    .product-info .title {
+      font-size: 24px;
+      line-height: 1.15;
+    }
+
+    .product-info .meta {
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .product-link-label {
+      display: inline-block;
+      margin-top: 14px;
+      font: 11px monospace;
+      text-transform: uppercase;
+      color: #aaa;
+    }
+
+    /* ABOUT */
+
+    .about {
+      display: grid;
+      grid-template-columns: 1.4fr .6fr;
+      gap: 60px;
+      border-top: 1px solid #292929;
+      padding-top: 25px;
+    }
+
+    .about-copy {
+      font-size: clamp(24px, 3vw, 42px);
+      letter-spacing: -.04em;
+    }
+
+    .about-side {
+      font: 11px monospace;
+      color: #999;
+      text-transform: uppercase;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      padding: 90px 22px 24px;
+      border-top: 1px solid #292929;
+      display: flex;
+      justify-content: space-between;
+      font: 11px monospace;
+    }
+
+    /* PROJECT PAGE */
+
+    .project {
+      padding: 130px 22px 70px;
+      min-width: 0;
+    }
+
+    .project h1 {
+      font-size: clamp(50px, 10vw, 150px);
+      line-height: .8;
+      letter-spacing: -.08em;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+
+    .hero-project {
+      width: 100%;
+      min-width: 0;
+      min-height: 0;
+      height: auto;
+      margin-top: 50px;
+      border: 0;
+      display: block;
+      background: #0a0a0a;
+      overflow: hidden;
+    }
+
+    .hero-project img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 85vh;
+      object-fit: contain;
+      object-position: center;
+      margin: 0 auto;
+    }
+
+    .gallery {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: 26px 18px;
-  margin-top: 42px;
-  min-width: 0;
-}
-
-.project-video-item {
-  min-width: 0;
-  width: 100%;
-}
-
-.project-video-item.instagram {
-  max-width: 100%;
-}
-
-/*
-  Instagram sets the actual embed dimensions.
-  Do not force its blockquote into a 16:9 frame.
-*/
-.project-video-item.instagram blockquote.instagram-media {
-  display: block;
-  margin: 0 !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 540px !important;
-}
-
-/* YOUTUBE */
-.project-video-frame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #151515;
-  overflow: hidden;
-}
-
-.project-video-frame iframe {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* VIDEO CAPTIONS */
-.project-video-title {
-  margin: 11px 0 0;
-  color: #a6a6a6;
-  font: 11px/1.5 monospace;
-  letter-spacing: .09em;
-  text-transform: uppercase;
-}
-
-.project-video-link {
-  display: inline-block;
-  margin-top: 12px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #555;
-  color: #bbb;
-  font: 11px monospace;
-  letter-spacing: .08em;
-}
-
-.project-video-link:hover {
-  color: #fff;
-  border-color: #fff;
-}
-
-/* IMAGE GALLERY */
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 3fr));
   align-items: start;
   gap: 12px;
-  margin-top: 46px;
+  background: transparent;
+  margin-top: 50px;
 }
 
 .gallery img {
@@ -162,379 +362,151 @@ permalink: /project.html
   background: #151515;
 }
 
-.project-credits {
-  margin-top: 46px;
-  color: #999;
-  font: 11px/1.8 monospace;
-  white-space: pre-line;
-}
+    .video-link {
+      margin-top: 30px;
+      font: 12px monospace;
+      text-transform: uppercase;
+    }
 
-/* MOBILE */
-@media (max-width: 700px) {
-  .project {
-    padding: 115px 14px 50px;
-  }
+    .project-credits {
+      margin-top: 50px;
+      color: #999;
+      font: 12px monospace;
+      white-space: pre-line;
+    }
 
-  .project > .meta:first-child {
-    margin-bottom: 24px;
-  }
+    /* MOBILE */
 
-  .project h1 {
-    font-size: clamp(40px, 11vw, 68px);
-    line-height: .95;
-  }
-
-  .hero-project {
-    margin-top: 30px;
-  }
-
-  .hero-project img {
-    max-height: 65vh;
-  }
-
-  .project .intro {
-    margin-top: 24px;
-  }
-
-  .project-videos {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
-    margin-top: 30px;
-  }
-
-  .project-video-item.instagram blockquote.instagram-media {
-    max-width: 400px !important;
-  }
-
-  .gallery {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-top: 32px;
-  }
-
-  .project-credits {
-    margin-top: 32px;
-  }
-}
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/admin/config.js"></script>
-
-<script>
-(async function () {
-  const slug = new URLSearchParams(location.search).get("slug");
-
-  const title = document.getElementById("project-title");
-  const meta = document.getElementById("project-meta");
-  const hero = document.getElementById("project-hero");
-  const description = document.getElementById("project-description");
-  const videosContainer = document.getElementById("project-videos");
-  const gallery = document.getElementById("project-gallery");
-  const credits = document.getElementById("project-credits");
-
-  function safe(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    })[char]);
-  }
-
-  function youtubeId(value) {
-    try {
-      const url = new URL(value);
-      const host = url.hostname.toLowerCase();
-      let id = "";
-
-      if (host === "youtu.be" || host === "www.youtu.be") {
-        id = url.pathname.split("/")[1];
-      } else if ([
-        "youtube.com",
-        "www.youtube.com",
-        "m.youtube.com",
-        "youtube-nocookie.com",
-        "www.youtube-nocookie.com"
-      ].includes(host)) {
-        if (url.pathname === "/watch") {
-          id = url.searchParams.get("v");
-        } else if (/^\/(embed|shorts|live)\//.test(url.pathname)) {
-          id = url.pathname.split("/")[2];
-        }
+    @media (max-width: 700px) {
+      header {
+        padding: 14px;
       }
 
-      return /^[a-zA-Z0-9_-]{11}$/.test(id || "") ? id : null;
-    } catch {
-      return null;
-    }
-  }
-
-  function instagramUrl(value) {
-    try {
-      const url = new URL(value);
-      const host = url.hostname.toLowerCase();
-
-      if (
-        host !== "instagram.com" &&
-        !host.endsWith(".instagram.com")
-      ) {
-        return null;
+      nav {
+        gap: 10px;
+        font-size: 10px;
       }
 
-      const match = url.pathname.match(
-        /^\/(reel|reels|p|tv)\/([A-Za-z0-9_-]+)\/?$/
-      );
+      .hero {
+        min-height: 100svh;
+        padding: 90px 14px 14px;
+      }
 
-      if (!match) return null;
+      .hero-box {
+        min-height: 70vh;
+      }
 
-      const type = match[1] === "reels" ? "reel" : match[1];
+      .hero-copy {
+        padding: 25px 10px;
+      }
 
-      return "https://www.instagram.com/" +
-        type + "/" + match[2] + "/";
-    } catch {
-      return null;
-    }
-  }
+      .hero h1 {
+        font-size: clamp(48px, 12vw, 90px);
+        margin: 45px 0;
+      }
 
-  function normalizeVideos(value) {
-    if (typeof value === "string") {
-      try {
-        value = JSON.parse(value);
-      } catch {
-        return [];
+      .hero-media {
+        height: 40vh;
+      }
+
+      .hero-meta {
+        flex-wrap: wrap;
+        gap: 8px 16px;
+      }
+
+      .section,
+      .project {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .row {
+        grid-template-columns: 45px minmax(0, 1fr) 20px;
+        gap: 8px;
+      }
+
+      .row .date {
+        display: none;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.store {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .product-info {
+        padding: 12px;
+      }
+
+      .product-info .title {
+        font-size: 19px;
+      }
+
+      .about {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+
+      .hero-project {
+        margin-top: 30px;
+      }
+
+      .hero-project img {
+        max-height: 70vh;
+      }
+
+      .gallery {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      footer {
+        padding: 60px 14px 24px;
       }
     }
 
-    if (!Array.isArray(value)) return [];
-
-    return value.map(item => {
-      const url = typeof item === "string"
-        ? item
-        : String(item?.url || "");
-
-      let platform = item && typeof item === "object"
-        ? item.platform
-        : null;
-
-      if (platform !== "instagram" && platform !== "youtube") {
-        try {
-          const host = new URL(url).hostname.toLowerCase();
-          platform =
-            host === "instagram.com" ||
-            host.endsWith(".instagram.com")
-              ? "instagram"
-              : "youtube";
-        } catch {
-          platform = "youtube";
-        }
+    @media (max-width: 380px) {
+      nav {
+        gap: 7px;
+        font-size: 9px;
       }
 
-      return {
-        title: typeof item === "string" ? "" : String(item?.title || ""),
-        url,
-        platform
-      };
-    }).filter(item => item.url.trim());
-  }
+      .grid.store {
+        grid-template-columns: minmax(0, 1fr);
+      }
 
-  function makeVideo(item, index) {
-    const wrapper = document.createElement("article");
-    wrapper.className = "project-video-item";
-
-    let embedUrl = null;
-
-    if (item.platform === "instagram") {
-      embedUrl = instagramUrl(item.url);
-      wrapper.classList.add("instagram");
-    } else {
-      const id = youtubeId(item.url);
-      if (id) {
-        embedUrl = "https://www.youtube-nocookie.com/embed/" + id;
+      .head {
+        font-size: 10px;
       }
     }
+  </style>
 
-    if (embedUrl && item.platform === "instagram") {
-      const blockquote = document.createElement("blockquote");
-      blockquote.className = "instagram-media";
-      blockquote.setAttribute("data-instgrm-permalink", embedUrl);
-      blockquote.setAttribute("data-instgrm-version", "14");
-
-      const fallback = document.createElement("a");
-      fallback.href = embedUrl;
-      fallback.target = "_blank";
-      fallback.rel = "noopener noreferrer";
-      fallback.textContent = "View Reel on Instagram ↗";
-
-      blockquote.appendChild(fallback);
-      wrapper.appendChild(blockquote);
-
-    } else if (embedUrl) {
-      const frame = document.createElement("div");
-      frame.className = "project-video-frame";
-
-      const iframe = document.createElement("iframe");
-      iframe.src = embedUrl;
-      iframe.title = item.title ||
-        (title.textContent + " video " + (index + 1));
-      iframe.loading = "lazy";
-      iframe.allow =
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-      iframe.referrerPolicy = "strict-origin-when-cross-origin";
-      iframe.allowFullscreen = true;
-
-      frame.appendChild(iframe);
-      wrapper.appendChild(frame);
-
-    } else {
-      const link = document.createElement("a");
-      link.className = "project-video-link";
-      link.href = item.url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.textContent = item.platform === "instagram"
-        ? "VIEW REEL ON INSTAGRAM ↗"
-        : "WATCH VIDEO ↗";
-
-      wrapper.appendChild(link);
+  <script>
+    if (
+      /(invite|recovery|confirmation|email_change)_token=/.test(location.hash)
+      && !location.pathname.startsWith("/admin")
+    ) {
+      location.replace("/admin/" + location.hash);
     }
+  </script>
+</head>
 
-    if (item.title.trim()) {
-      const caption = document.createElement("h2");
-      caption.className = "project-video-title";
-      caption.textContent = item.title;
-      wrapper.appendChild(caption);
-    }
+<body>
+  <header>
+    <a class="brand" href="/">MUBIKISHORE</a>
 
-    return wrapper;
-  }
+    <nav>
+      <a href="/#work">Work</a>
+      <a href="/#store">Store</a>
+      <a href="/#other">Other</a>
+      <a href="/#about">About</a>
+    </nav>
+  </header>
 
-  function loadInstagramScript() {
-    if (window.instgrm?.Embeds) {
-      window.instgrm.Embeds.process();
-      return;
-    }
-
-    if (document.getElementById("instagram-embed-script")) return;
-
-    const script = document.createElement("script");
-    script.id = "instagram-embed-script";
-    script.src = "https://www.instagram.com/embed.js";
-    script.async = true;
-    script.onload = () => window.instgrm?.Embeds?.process();
-
-    document.body.appendChild(script);
-  }
-
-  if (!slug) {
-    title.textContent = "Project not found";
-    return;
-  }
-
-  try {
-    const { data, error } = await MUBI_SUPABASE
-      .from("projects")
-      .select("*")
-      .eq("slug", slug)
-      .eq("published", true)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    if (!data) {
-      title.textContent = "Project not found";
-      return;
-    }
-
-    document.title = data.title + " — MUBIKISHORE";
-    title.textContent = data.title;
-    meta.textContent = [data.date, data.role].filter(Boolean).join(" · ");
-
-    if (data.hero) {
-      hero.innerHTML =
-        '<img src="' + safe(data.hero) +
-        '" alt="' + safe(data.title) + '" loading="eager">';
-    } else {
-      hero.remove();
-    }
-
-    description.textContent = data.description || "";
-    if (!data.description) description.remove();
-
-    let videos = normalizeVideos(data.videos);
-
-    // Keep support for existing projects using the single-video field.
-    if (data.video && data.video.trim()) {
-      const legacyUrl = data.video.trim();
-
-      if (!videos.some(item => item.url.trim() === legacyUrl)) {
-        let platform = "youtube";
-
-        try {
-          const host = new URL(legacyUrl).hostname.toLowerCase();
-          if (
-            host === "instagram.com" ||
-            host.endsWith(".instagram.com")
-          ) {
-            platform = "instagram";
-          }
-        } catch {}
-
-        videos.unshift({
-          title: "Main Film",
-          url: legacyUrl,
-          platform
-        });
-      }
-    }
-
-    if (videos.length) {
-      videosContainer.replaceChildren();
-
-      videos.forEach((item, index) => {
-        videosContainer.appendChild(makeVideo(item, index));
-      });
-
-      if (videos.some(item => item.platform === "instagram")) {
-        loadInstagramScript();
-      }
-    } else {
-      videosContainer.remove();
-    }
-
-    let images = data.gallery || [];
-
-    if (typeof images === "string") {
-      try {
-        images = JSON.parse(images);
-      } catch {
-        images = [];
-      }
-    }
-
-    if (Array.isArray(images) && images.length) {
-      gallery.innerHTML = images.map(item => {
-        const src = typeof item === "string" ? item : item.image;
-
-        return src
-          ? '<img src="' + safe(src) +
-            '" alt="' + safe(data.title) + '" loading="lazy">'
-          : "";
-      }).join("");
-    } else {
-      gallery.remove();
-    }
-
-    if (data.credits) {
-      credits.textContent = data.credits;
-    } else {
-      credits.remove();
-    }
-
-  } catch (error) {
-    console.error("Project loading error:", error);
-    title.textContent = "Unable to load project";
-  }
-})();
-</script>
+  {{content|safe}}
+</body>
+</html>
