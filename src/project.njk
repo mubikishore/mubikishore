@@ -77,6 +77,7 @@ permalink: /project.html
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
+  justify-items: start;
   gap: 24px 18px;
   width: 100%;
   max-width: 1050px;
@@ -87,19 +88,26 @@ permalink: /project.html
   width: 100%;
   min-width: 0;
   align-self: start;
+  margin: 0;
 }
 
-/* INSTAGRAM EMBEDS
-   Let Instagram determine its own player height. */
-.project-video-item.instagram blockquote.instagram-media {
+.project-video-item.instagram {
   display: block;
+  min-width: 0;
+  overflow: visible;
+}
+
+/* INSTAGRAM: NO FORCED ASPECT RATIO OR FIXED HEIGHT */
+.project-video-item.instagram blockquote.instagram-media {
+  display: block !important;
+  float: none !important;
+  margin: 0 !important;
   width: 100% !important;
   min-width: 0 !important;
-  max-width: 100% !important;
-  margin: 0 !important;
+  max-width: 540px !important;
 }
 
-/* YOUTUBE EMBEDS */
+/* YOUTUBE */
 .project-video-frame {
   position: relative;
   width: 100%;
@@ -197,10 +205,6 @@ permalink: /project.html
     max-width: 420px;
     gap: 24px;
     margin-top: 28px;
-  }
-
-  .project-video-item.instagram blockquote.instagram-media {
-    max-width: 100% !important;
   }
 
   .gallery {
@@ -313,7 +317,6 @@ permalink: /project.html
       if (platform !== "instagram" && platform !== "youtube") {
         try {
           const host = new URL(url).hostname.toLowerCase();
-
           platform =
             host === "instagram.com" ||
             host.endsWith(".instagram.com")
@@ -343,7 +346,6 @@ permalink: /project.html
       wrapper.classList.add("instagram");
     } else {
       const id = youtubeId(item.url);
-
       if (id) {
         embedUrl = "https://www.youtube-nocookie.com/embed/" + id;
       }
@@ -458,7 +460,6 @@ permalink: /project.html
 
     let videos = normalizeVideos(data.videos);
 
-    // Support older projects that use the single-video field.
     if (data.video && data.video.trim()) {
       const legacyUrl = data.video.trim();
 
@@ -467,7 +468,6 @@ permalink: /project.html
 
         try {
           const host = new URL(legacyUrl).hostname.toLowerCase();
-
           if (
             host === "instagram.com" ||
             host.endsWith(".instagram.com")
@@ -508,7 +508,9 @@ permalink: /project.html
 
     if (Array.isArray(images) && images.length) {
       gallery.innerHTML = images.map(item => {
-        const src = typeof item === "string" ? item : item.image;
+        const src = typeof item === "string"
+          ? item
+          : item?.image || item?.url || "";
 
         return src
           ? '<img src="' + safe(src) +
