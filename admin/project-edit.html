@@ -8,51 +8,67 @@
 <link rel="stylesheet" href="/admin/styles.css">
 <style>
 .image-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 14px;
-  margin-top: 14px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:14px;
+  margin-top:14px;
 }
 .image-card {
-  border: 1px solid #444;
-  padding: 10px;
-  min-width: 0;
+  border:1px solid #444;
+  padding:10px;
+  min-width:0;
 }
 .image-card img {
-  display: block;
-  width: 100%;
-  height: 130px;
-  object-fit: cover;
-  background: #222;
+  display:block;
+  width:100%;
+  height:130px;
+  object-fit:cover;
+  background:#222;
 }
 .image-card p {
-  font-size: 12px;
-  overflow-wrap: anywhere;
-  color: #aaa;
+  font-size:12px;
+  overflow-wrap:anywhere;
+  color:#aaa;
 }
 .image-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-top: 10px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-top:10px;
 }
 .remove-image {
-  background: #642d2d;
-  color: white;
-  border: 0;
-  padding: 8px 10px;
-  cursor: pointer;
+  background:#642d2d;
+  color:white;
+  border:0;
+  padding:8px 10px;
+  cursor:pointer;
 }
 .preview-label {
-  font-size: 11px;
-  letter-spacing: 1px;
-  margin-top: 18px;
-  color: #aaa;
+  font-size:11px;
+  letter-spacing:1px;
+  margin-top:18px;
+  color:#aaa;
 }
 .help-text {
-  font-size: 12px;
-  color: #aaa;
-  margin-top: 8px;
+  font-size:12px;
+  color:#aaa;
+  margin-top:8px;
+}
+.video-entry {
+  border:1px solid #444;
+  padding:16px;
+  margin:12px 0;
+}
+.video-entry .field {
+  margin-bottom:12px;
+}
+.video-entry-actions {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.video-entry-actions button {
+  cursor:pointer;
 }
 </style>
 </head>
@@ -124,10 +140,27 @@
           <p class="help-text">Upload a new image to replace the current one.</p>
           <div id="heroPreview"></div>
         </div>
+
         <div class="field">
-          <label for="video">VIDEO URL</label>
+          <label for="video">VIDEO URL (LEGACY)</label>
           <input id="video">
+          <p class="help-text">
+            Existing single-video link. Keep it for older projects.
+            It will appear first if provided.
+          </p>
         </div>
+      </div>
+
+      <div class="field">
+        <label>ADDITIONAL PROJECT VIDEOS</label>
+        <p class="help-text">
+          Add YouTube links and optional titles. Use UP and DOWN
+          to change the order, or REMOVE to delete a video.
+        </p>
+        <div id="videosEditor"></div>
+        <button type="button" class="btn" id="addVideo">
+          + ADD ANOTHER VIDEO
+        </button>
       </div>
 
       <div class="field">
@@ -138,13 +171,17 @@
       <div class="field">
         <label for="galleryFiles">GALLERY</label>
         <input id="galleryFiles" type="file" accept="image/*" multiple>
-        <p class="help-text">Add images or remove existing gallery images below.</p>
+        <p class="help-text">
+          Add images or remove existing gallery images below.
+        </p>
         <div id="galleryPreview" class="image-preview-grid"></div>
       </div>
 
       <div class="field">
         <label>STATUS</label>
-        <label><input id="published" type="checkbox" checked> Published</label>
+        <label>
+          <input id="published" type="checkbox" checked> Published
+        </label>
       </div>
 
       <button id="save" class="btn primary">SAVE PROJECT</button>
@@ -163,8 +200,9 @@ const projectId = new URLSearchParams(location.search).get("id");
 
 let hero = "";
 let gallery = [];
+let videos = [];
 
-const el = (id) => document.getElementById(id);
+const el = id => document.getElementById(id);
 
 function showMessage(message) {
   el("msg").style.display = "block";
@@ -182,17 +220,149 @@ function normalizeGallery(value) {
 
   if (!Array.isArray(value)) return [];
 
-  return value
-    .map(item => {
-      if (typeof item === "string") return { image: item };
-      if (item && typeof item.image === "string") return { ...item };
-      if (item && typeof item.url === "string") {
-        return { ...item, image: item.url };
-      }
-      return null;
-    })
-    .filter(item => item && item.image);
+  return value.map(item => {
+    if (typeof item === "string") return { image: item };
+    if (item && typeof item.image === "string") return { ...item };
+    if (item && typeof item.url === "string") {
+      return { ...item, image: item.url };
+    }
+    return null;
+  }).filter(item => item && item.image);
 }
+
+function normalizeVideos(value) {
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return [];
+    }
+  }
+
+  if (!Array.isArray(value)) return [];
+
+  return value.map(item => {
+    if (typeof item === "string") {
+      return { title: "", url: item };
+    }
+
+    return {
+      title: String(item?.title || ""),
+      url: String(item?.url || "")
+    };
+  }).filter(item => item.url);
+}
+
+function youtubeId(value) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    let id = "";
+
+    if (host === "youtu.be" || host === "www.youtu.be") {
+      id = url.pathname.split("/")[1];
+    } else if ([
+      "youtube.com",
+      "www.youtube.com",
+      "m.youtube.com",
+      "youtube-nocookie.com",
+      "www.youtube-nocookie.com"
+    ].includes(host)) {
+      if (url.pathname === "/watch") {
+        id = url.searchParams.get("v");
+      } else if (/^\/(embed|shorts|live)\//.test(url.pathname)) {
+        id = url.pathname.split("/")[2];
+      }
+    }
+
+    return /^[a-zA-Z0-9_-]{11}$/.test(id || "") ? id : null;
+  } catch {
+    return null;
+  }
+}
+
+function renderVideos() {
+  const container = el("videosEditor");
+  container.replaceChildren();
+
+  videos.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "video-entry";
+
+    const heading = document.createElement("div");
+    heading.className = "preview-label";
+    heading.textContent = "VIDEO " + (index + 1);
+
+    const titleField = document.createElement("div");
+    titleField.className = "field";
+
+    const titleLabel = document.createElement("label");
+    titleLabel.textContent = "VIDEO TITLE";
+
+    const titleInput = document.createElement("input");
+    titleInput.placeholder = "e.g. Behind the Scenes";
+    titleInput.value = item.title;
+    titleInput.addEventListener("input", () => {
+      item.title = titleInput.value;
+    });
+
+    titleField.append(titleLabel, titleInput);
+
+    const urlField = document.createElement("div");
+    urlField.className = "field";
+
+    const urlLabel = document.createElement("label");
+    urlLabel.textContent = "YOUTUBE URL";
+
+    const urlInput = document.createElement("input");
+    urlInput.type = "url";
+    urlInput.placeholder = "https://www.youtube.com/watch?v=...";
+    urlInput.value = item.url;
+    urlInput.addEventListener("input", () => {
+      item.url = urlInput.value;
+    });
+
+    urlField.append(urlLabel, urlInput);
+
+    const actions = document.createElement("div");
+    actions.className = "video-entry-actions";
+
+    function addAction(label, callback, disabled = false) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn";
+      button.textContent = label;
+      button.disabled = disabled;
+      button.addEventListener("click", callback);
+      actions.appendChild(button);
+    }
+
+    addAction("↑ UP", () => {
+      [videos[index - 1], videos[index]] =
+        [videos[index], videos[index - 1]];
+      renderVideos();
+    }, index === 0);
+
+    addAction("↓ DOWN", () => {
+      [videos[index + 1], videos[index]] =
+        [videos[index], videos[index + 1]];
+      renderVideos();
+    }, index === videos.length - 1);
+
+    addAction("REMOVE", () => {
+      videos.splice(index, 1);
+      renderVideos();
+    });
+
+    card.append(heading, titleField, urlField, actions);
+    container.appendChild(card);
+  });
+}
+
+el("addVideo").addEventListener("click", () => {
+  videos.push({ title: "", url: "" });
+  renderVideos();
+});
 
 function createImageCard(url, label, onRemove) {
   const card = document.createElement("div");
@@ -235,6 +405,7 @@ function renderHero() {
   }
 
   container.className = "";
+
   const label = document.createElement("div");
   label.className = "preview-label";
   label.textContent = "CURRENT HERO IMAGE";
@@ -295,6 +466,7 @@ async function loadProject() {
   if (!projectId) {
     renderHero();
     renderGallery();
+    renderVideos();
     return;
   }
 
@@ -313,8 +485,10 @@ async function loadProject() {
 
   const project = result.data;
 
-  ["title", "slug", "date", "year", "role",
-   "description", "video", "credits"].forEach(key => {
+  [
+    "title", "slug", "date", "year", "role",
+    "description", "video", "credits"
+  ].forEach(key => {
     el(key).value = project[key] ?? "";
   });
 
@@ -322,9 +496,11 @@ async function loadProject() {
 
   hero = project.hero || "";
   gallery = normalizeGallery(project.gallery);
+  videos = normalizeVideos(project.videos);
 
   renderHero();
   renderGallery();
+  renderVideos();
 }
 
 el("cancel").addEventListener("click", () => {
@@ -348,7 +524,25 @@ el("save").addEventListener("click", async () => {
         .replace(/(^-|-$)/g, "");
     }
 
+    const cleanVideos = videos.map(item => ({
+      title: item.title.trim(),
+      url: item.url.trim()
+    }));
+
+    for (const item of cleanVideos) {
+      if (!item.url) {
+        throw new Error(
+          "Every added video needs a YouTube URL. Remove empty entries."
+        );
+      }
+
+      if (!youtubeId(item.url)) {
+        throw new Error("Invalid YouTube URL: " + item.url);
+      }
+    }
+
     const heroFile = el("heroFile").files[0];
+
     if (heroFile) {
       hero = await upload(heroFile);
     }
@@ -368,6 +562,7 @@ el("save").addEventListener("click", async () => {
       role: el("role").value.trim(),
       hero,
       video: el("video").value.trim(),
+      videos: cleanVideos,
       description: el("description").value.trim(),
       credits: el("credits").value.trim(),
       gallery,
@@ -375,9 +570,13 @@ el("save").addEventListener("click", async () => {
     };
 
     const result = projectId
-      ? await MUBI_SUPABASE.from("projects")
-          .update(payload).eq("id", projectId)
-      : await MUBI_SUPABASE.from("projects").insert(payload);
+      ? await MUBI_SUPABASE
+          .from("projects")
+          .update(payload)
+          .eq("id", projectId)
+      : await MUBI_SUPABASE
+          .from("projects")
+          .insert(payload);
 
     if (result.error) throw result.error;
 
