@@ -1,3 +1,4 @@
+
 ---
 layout: base.njk
 title: Project
@@ -10,7 +11,7 @@ permalink: /project.html
   <div class="meta" id="project-meta"></div>
   <div class="hero-project" id="project-hero"></div>
   <p class="intro" id="project-description"></p>
-  <div class="video-link" id="project-video"></div>
+  <section class="project-videos" id="project-videos"></section>
   <div class="gallery" id="project-gallery"></div>
   <div class="project-credits" id="project-credits"></div>
 </main>
@@ -19,6 +20,67 @@ permalink: /project.html
   <span>MUBIKISHORE</span>
   <span>© 2026</span>
 </footer>
+
+<style>
+.project-videos {
+  margin-top: 40px;
+}
+
+.project-video-main {
+  width: 100%;
+  margin-bottom: 32px;
+}
+
+.project-video-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px 16px;
+}
+
+.project-video-item {
+  min-width: 0;
+}
+
+.project-video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #151515;
+  overflow: hidden;
+}
+
+.project-video-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.project-video-title {
+  margin: 12px 0 0;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: .04em;
+}
+
+.project-video-link {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .project-video-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .project-video-main {
+    margin-bottom: 24px;
+  }
+}
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/admin/config.js"></script>
@@ -31,15 +93,112 @@ permalink: /project.html
   const meta = document.getElementById("project-meta");
   const hero = document.getElementById("project-hero");
   const description = document.getElementById("project-description");
-  const video = document.getElementById("project-video");
+  const videosContainer = document.getElementById("project-videos");
   const gallery = document.getElementById("project-gallery");
   const credits = document.getElementById("project-credits");
 
   function safe(value) {
     return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;",
-      '"': "&quot;", "'": "&#39;"
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
     })[char]);
+  }
+
+  function youtubeId(value) {
+    try {
+      const url = new URL(value);
+      const host = url.hostname.toLowerCase();
+      let id = "";
+
+      if (host === "youtu.be" || host === "www.youtu.be") {
+        id = url.pathname.split("/")[1];
+      } else if ([
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+        "youtube-nocookie.com",
+        "www.youtube-nocookie.com"
+      ].includes(host)) {
+        if (url.pathname === "/watch") {
+          id = url.searchParams.get("v");
+        } else if (/^\/(embed|shorts|live)\//.test(url.pathname)) {
+          id = url.pathname.split("/")[2];
+        }
+      }
+
+      return /^[a-zA-Z0-9_-]{11}$/.test(id || "") ? id : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function normalizeVideos(value) {
+    if (typeof value === "string") {
+      try {
+        value = JSON.parse(value);
+      } catch {
+        return [];
+      }
+    }
+
+    if (!Array.isArray(value)) return [];
+
+    return value.map(item => {
+      if (typeof item === "string") {
+        return { title: "", url: item };
+      }
+
+      return {
+        title: String(item?.title || ""),
+        url: String(item?.url || "")
+      };
+    }).filter(item => item.url.trim());
+  }
+
+  function makeVideo(item, index, main = false) {
+    const wrapper = document.createElement("article");
+    wrapper.className = main
+      ? "project-video-item project-video-main"
+      : "project-video-item";
+
+    const id = youtubeId(item.url);
+
+    if (id) {
+      const frame = document.createElement("div");
+      frame.className = "project-video-frame";
+
+      const iframe = document.createElement("iframe");
+      iframe.src = "https://www.youtube-nocookie.com/embed/" + id;
+      iframe.title = item.title || (title.textContent + " video " + (index + 1));
+      iframe.loading = "lazy";
+      iframe.allow =
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      iframe.referrerPolicy = "strict-origin-when-cross-origin";
+      iframe.allowFullscreen = true;
+
+      frame.appendChild(iframe);
+      wrapper.appendChild(frame);
+    } else {
+      const link = document.createElement("a");
+      link.className = "project-video-link";
+      link.href = item.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "WATCH VIDEO ↗";
+      wrapper.appendChild(link);
+    }
+
+    if (item.title.trim()) {
+      const caption = document.createElement("h2");
+      caption.className = "project-video-title";
+      caption.textContent = item.title;
+      wrapper.appendChild(caption);
+    }
+
+    return wrapper;
   }
 
   if (!slug) {
@@ -56,6 +215,7 @@ permalink: /project.html
       .maybeSingle();
 
     if (error) throw error;
+
     if (!data) {
       title.textContent = "Project not found";
       return;
@@ -66,7 +226,8 @@ permalink: /project.html
     meta.textContent = [data.date, data.role].filter(Boolean).join(" · ");
 
     if (data.hero) {
-      hero.innerHTML = '<img src="' + safe(data.hero) +
+      hero.innerHTML =
+        '<img src="' + safe(data.hero) +
         '" alt="' + safe(data.title) + '" loading="eager">';
     } else {
       hero.remove();
@@ -75,23 +236,61 @@ permalink: /project.html
     description.textContent = data.description || "";
     if (!data.description) description.remove();
 
-    if (data.video) {
-      video.innerHTML = '<a href="' + safe(data.video) +
-        '" target="_blank" rel="noopener">WATCH FILM ↗</a>';
+    let videos = normalizeVideos(data.videos);
+
+    // Keep supporting the existing single-video field.
+    // Add it first only when it isn't already in the new list.
+    if (data.video && data.video.trim()) {
+      const alreadyIncluded = videos.some(
+        item => item.url.trim() === data.video.trim()
+      );
+
+      if (!alreadyIncluded) {
+        videos.unshift({
+          title: "Main Film",
+          url: data.video.trim()
+        });
+      }
+    }
+
+    if (videos.length) {
+      videosContainer.replaceChildren();
+
+      const mainVideo = makeVideo(videos[0], 0, true);
+      videosContainer.appendChild(mainVideo);
+
+      if (videos.length > 1) {
+        const grid = document.createElement("div");
+        grid.className = "project-video-grid";
+
+        videos.slice(1).forEach((item, index) => {
+          grid.appendChild(makeVideo(item, index + 1));
+        });
+
+        videosContainer.appendChild(grid);
+      }
     } else {
-      video.remove();
+      videosContainer.remove();
     }
 
     let images = data.gallery || [];
+
     if (typeof images === "string") {
-      try { images = JSON.parse(images); } catch { images = []; }
+      try {
+        images = JSON.parse(images);
+      } catch {
+        images = [];
+      }
     }
 
     if (Array.isArray(images) && images.length) {
       gallery.innerHTML = images.map(item => {
         const src = typeof item === "string" ? item : item.image;
-        return src ? '<img src="' + safe(src) +
-          '" alt="' + safe(data.title) + '" loading="lazy">' : "";
+
+        return src
+          ? '<img src="' + safe(src) +
+            '" alt="' + safe(data.title) + '" loading="lazy">'
+          : "";
       }).join("");
     } else {
       gallery.remove();
