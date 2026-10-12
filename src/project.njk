@@ -21,11 +21,12 @@ permalink: /project.html
 </footer>
 
 <style>
+/* VIDEO LAYOUT */
 .project-videos {
-  margin-top: 40px;
+  margin-top: 36px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px 16px;
+  gap: 30px 18px;
   align-items: start;
 }
 
@@ -34,6 +35,19 @@ permalink: /project.html
   width: 100%;
 }
 
+.project-video-item.instagram {
+  max-width: 100%;
+}
+
+/* INSTAGRAM CONTROLS ITS OWN EMBED HEIGHT */
+.project-video-item.instagram blockquote.instagram-media {
+  margin: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* YOUTUBE PLAYER */
 .project-video-frame {
   position: relative;
   width: 100%;
@@ -45,39 +59,59 @@ permalink: /project.html
 .project-video-frame iframe {
   position: absolute;
   inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   border: 0;
 }
 
-.project-video-item.instagram {
-  min-width: 0;
-}
-
-.project-video-item.instagram blockquote.instagram-media {
-  margin: 0 !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 400px !important;
-}
-
+/* CAPTIONS */
 .project-video-title {
-  margin: 12px 0 0;
-  font-size: 13px;
+  margin: 10px 0 0;
+  color: #a5a5a5;
+  font-size: 11px;
+  line-height: 1.5;
   font-weight: 400;
-  letter-spacing: .04em;
+  letter-spacing: .12em;
+  text-transform: uppercase;
 }
 
+/* FALLBACK LINK */
 .project-video-link {
   display: inline-block;
   margin-top: 12px;
-  font-size: 12px;
+  color: #b5b5b5;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-decoration: none;
+  border-bottom: 1px solid #555;
+  padding-bottom: 4px;
 }
 
+.project-video-link:hover {
+  color: #fff;
+  border-color: #fff;
+}
+
+/* IMAGE GALLERY */
+.gallery {
+  margin-top: 44px;
+}
+
+/* TABLET AND MOBILE */
 @media (max-width: 700px) {
   .project-videos {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 26px;
+    margin-top: 28px;
+  }
+
+  .project-video-item.instagram blockquote.instagram-media {
+    max-width: 400px !important;
+  }
+
+  .gallery {
+    margin-top: 32px;
   }
 }
 </style>
@@ -182,7 +216,6 @@ permalink: /project.html
         ? item.platform
         : null;
 
-      // Detect the platform from the URL if not saved.
       if (platform !== "instagram" && platform !== "youtube") {
         try {
           const host = new URL(url).hostname.toLowerCase();
@@ -225,14 +258,12 @@ permalink: /project.html
     }
 
     if (embedUrl && item.platform === "instagram") {
-      // Do not force Instagram into a fixed-height frame.
-      // Instagram controls the rendered embed dimensions.
       const blockquote = document.createElement("blockquote");
       blockquote.className = "instagram-media";
       blockquote.setAttribute("data-instgrm-permalink", embedUrl);
       blockquote.setAttribute("data-instgrm-version", "14");
       blockquote.style.cssText =
-        "margin:0;width:100%;max-width:400px;";
+        "margin:0;width:100%;max-width:100%;";
 
       const fallback = document.createElement("a");
       fallback.href = embedUrl;
@@ -344,7 +375,7 @@ permalink: /project.html
 
     let videos = normalizeVideos(data.videos);
 
-    // Support the older single-video field as well.
+    // Support older projects that use the single-video field.
     if (data.video && data.video.trim()) {
       const legacyUrl = data.video.trim();
 
@@ -373,7 +404,6 @@ permalink: /project.html
     if (videos.length) {
       videosContainer.replaceChildren();
 
-      // Every video goes into the same two-column grid.
       videos.forEach((item, index) => {
         videosContainer.appendChild(makeVideo(item, index));
       });
