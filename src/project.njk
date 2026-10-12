@@ -1,3 +1,4 @@
+
 ---
 layout: base.njk
 title: Project
@@ -50,6 +51,8 @@ permalink: /project.html
 .project-video-item.instagram .project-video-frame {
   width: min(100%, 400px);
   aspect-ratio: 9 / 16;
+  overflow: visible;
+  background: transparent;
 }
 
 .project-video-frame iframe {
@@ -58,6 +61,20 @@ permalink: /project.html
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+.project-video-item.instagram .project-video-frame iframe {
+  position: static;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.project-video-item.instagram blockquote.instagram-media {
+  margin: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 400px !important;
 }
 
 .project-video-title {
@@ -87,11 +104,10 @@ permalink: /project.html
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/admin/config.js"></script>
-<script async src="https://www.instagram.com/embed.js"></script>
 
 <script>
 (async function () {
-  const slug = new URLSearchParams(location.search).get("slug");
+  const slug = new URLSearchParams(window.location.search).get("slug");
 
   const title = document.getElementById("project-title");
   const meta = document.getElementById("project-meta");
@@ -120,8 +136,11 @@ permalink: /project.html
       if (host === "youtu.be" || host === "www.youtu.be") {
         id = url.pathname.split("/")[1];
       } else if ([
-        "youtube.com", "www.youtube.com", "m.youtube.com",
-        "youtube-nocookie.com", "www.youtube-nocookie.com"
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+        "youtube-nocookie.com",
+        "www.youtube-nocookie.com"
       ].includes(host)) {
         if (url.pathname === "/watch") {
           id = url.searchParams.get("v");
@@ -141,50 +160,77 @@ permalink: /project.html
       const url = new URL(value);
       const host = url.hostname.toLowerCase();
 
-      if (host !== "instagram.com" &&
-          !host.endsWith(".instagram.com")) return null;
+      if (
+        host !== "instagram.com" &&
+        !host.endsWith(".instagram.com")
+      ) {
+        return null;
+      }
 
       const match = url.pathname.match(
-        /^\/(reel|reels|p|tv)\/([A-Za-z0-9_-]+)\/?/
+        /^\/(reel|reels|p|tv)\/([A-Za-z0-9_-]+)\/?$/
       );
 
-      return match
-        ? "https://www.instagram.com/" + match[1] + "/" + match[2] + "/"
-        : null;
+      if (!match) return null;
+
+      const type = match[1] === "reels" ? "reel" : match[1];
+
+      return "https://www.instagram.com/" +
+        type + "/" + match[2] + "/";
     } catch {
       return null;
     }
   }
 
+  // Detect the platform from the URL when an older
+  // saved video has no platform property.
   function normalizeVideos(value) {
     if (typeof value === "string") {
-      try { value = JSON.parse(value); } catch { return []; }
+      try {
+        value = JSON.parse(value);
+      } catch {
+        return [];
+      }
     }
 
     if (!Array.isArray(value)) return [];
 
     return value.map(item => {
-      if (typeof item === "string") {
-        return {
-          title: "",
-          url: item,
-          platform: "youtube"
-        };
+      const url = typeof item === "string"
+        ? item
+        : String(item?.url || "");
+
+      let platform = typeof item === "object" && item
+        ? item.platform
+        : null;
+
+      if (platform !== "instagram" && platform !== "youtube") {
+        try {
+          const host = new URL(url).hostname.toLowerCase();
+
+          platform =
+            host === "instagram.com" ||
+            host.endsWith(".instagram.com")
+              ? "instagram"
+              : "youtube";
+        } catch {
+          platform = "youtube";
+        }
       }
 
       return {
-        title: String(item?.title || ""),
-        url: String(item?.url || ""),
-        platform: item?.platform === "instagram" ||
-                  item?.platform === "youtube"
-          ? item.platform
-          : "youtube"
+        title: typeof item === "string"
+          ? ""
+          : String(item?.title || ""),
+        url,
+        platform
       };
     }).filter(item => item.url.trim());
   }
 
   function makeVideo(item, index, main = false) {
     const wrapper = document.createElement("article");
+
     wrapper.className = "project-video-item" +
       (main ? " project-video-main" : "");
 
@@ -196,6 +242,7 @@ permalink: /project.html
       wrapper.classList.add("instagram");
     } else {
       const id = youtubeId(item.url);
+
       if (id) {
         embedUrl = "https://www.youtube-nocookie.com/embed/" + id;
       }
@@ -210,19 +257,26 @@ permalink: /project.html
       blockquote.setAttribute("data-instgrm-permalink", embedUrl);
       blockquote.setAttribute("data-instgrm-version", "14");
       blockquote.style.cssText =
-        "background:#fff;border:0;margin:0;width:100%;max-width:400px;";
+        "background:transparent;border:0;margin:0;width:100%;max-width:400px;";
 
-      frame.style.aspectRatio = "auto";
-      frame.style.overflow = "visible";
+      const fallback = document.createElement("a");
+      fallback.href = embedUrl;
+      fallback.target = "_blank";
+      fallback.rel = "noopener noreferrer";
+      fallback.textContent = "View this Reel on Instagram ↗";
+
+      blockquote.appendChild(fallback);
       frame.appendChild(blockquote);
       wrapper.appendChild(frame);
+
     } else if (embedUrl) {
       const frame = document.createElement("div");
       frame.className = "project-video-frame";
 
       const iframe = document.createElement("iframe");
       iframe.src = embedUrl;
-      iframe.title = item.title || (title.textContent + " video " + (index + 1));
+      iframe.title = item.title ||
+        (title.textContent + " video " + (index + 1));
       iframe.loading = "lazy";
       iframe.allow =
         "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
@@ -231,13 +285,17 @@ permalink: /project.html
 
       frame.appendChild(iframe);
       wrapper.appendChild(frame);
+
     } else {
       const link = document.createElement("a");
       link.className = "project-video-link";
       link.href = item.url;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      link.textContent = "WATCH VIDEO ↗";
+      link.textContent = platform === "instagram"
+        ? "VIEW REEL ON INSTAGRAM ↗"
+        : "WATCH VIDEO ↗";
+
       wrapper.appendChild(link);
     }
 
@@ -249,6 +307,29 @@ permalink: /project.html
     }
 
     return wrapper;
+  }
+
+  function processInstagramEmbeds() {
+    if (window.instgrm?.Embeds) {
+      window.instgrm.Embeds.process();
+    }
+  }
+
+  function loadInstagramScript() {
+    if (window.instgrm?.Embeds) {
+      processInstagramEmbeds();
+      return;
+    }
+
+    if (document.getElementById("instagram-embed-script")) return;
+
+    const script = document.createElement("script");
+    script.id = "instagram-embed-script";
+    script.src = "https://www.instagram.com/embed.js";
+    script.async = true;
+    script.onload = processInstagramEmbeds;
+
+    document.body.appendChild(script);
   }
 
   if (!slug) {
@@ -273,7 +354,9 @@ permalink: /project.html
 
     document.title = data.title + " — MUBIKISHORE";
     title.textContent = data.title;
-    meta.textContent = [data.date, data.role].filter(Boolean).join(" · ");
+    meta.textContent = [data.date, data.role]
+      .filter(Boolean)
+      .join(" · ");
 
     if (data.hero) {
       hero.innerHTML =
@@ -284,24 +367,50 @@ permalink: /project.html
     }
 
     description.textContent = data.description || "";
-    if (!data.description) description.remove();
+
+    if (!data.description) {
+      description.remove();
+    }
 
     let videos = normalizeVideos(data.videos);
 
-    // Preserve the old single-video field for existing projects.
-    if (data.video && data.video.trim() &&
-        !videos.some(item => item.url.trim() === data.video.trim())) {
-      videos.unshift({
-        title: "Main Film",
-        url: data.video.trim(),
-        platform: "youtube"
-      });
+    // Support the existing single-video field.
+    // Detect Instagram URLs instead of assuming YouTube.
+    if (data.video && data.video.trim()) {
+      const legacyUrl = data.video.trim();
+
+      const alreadyIncluded = videos.some(
+        item => item.url.trim() === legacyUrl
+      );
+
+      if (!alreadyIncluded) {
+        let legacyPlatform = "youtube";
+
+        try {
+          const host = new URL(legacyUrl).hostname.toLowerCase();
+
+          if (
+            host === "instagram.com" ||
+            host.endsWith(".instagram.com")
+          ) {
+            legacyPlatform = "instagram";
+          }
+        } catch {}
+
+        videos.unshift({
+          title: "Main Film",
+          url: legacyUrl,
+          platform: legacyPlatform
+        });
+      }
     }
 
     if (videos.length) {
       videosContainer.replaceChildren();
 
-      videosContainer.appendChild(makeVideo(videos[0], 0, true));
+      videosContainer.appendChild(
+        makeVideo(videos[0], 0, true)
+      );
 
       if (videos.length > 1) {
         const grid = document.createElement("div");
@@ -314,18 +423,8 @@ permalink: /project.html
         videosContainer.appendChild(grid);
       }
 
-      if (window.instgrm?.Embeds) {
-        window.instgrm.Embeds.process();
-      } else {
-        const instagramScript = document.querySelector(
-          'script[src*="instagram.com/embed.js"]'
-        );
-
-        if (instagramScript) {
-          instagramScript.addEventListener("load", () => {
-            window.instgrm?.Embeds?.process();
-          }, { once: true });
-        }
+      if (videos.some(item => item.platform === "instagram")) {
+        loadInstagramScript();
       }
     } else {
       videosContainer.remove();
@@ -334,12 +433,17 @@ permalink: /project.html
     let images = data.gallery || [];
 
     if (typeof images === "string") {
-      try { images = JSON.parse(images); } catch { images = []; }
+      try {
+        images = JSON.parse(images);
+      } catch {
+        images = [];
+      }
     }
 
     if (Array.isArray(images) && images.length) {
       gallery.innerHTML = images.map(item => {
         const src = typeof item === "string" ? item : item.image;
+
         return src
           ? '<img src="' + safe(src) +
             '" alt="' + safe(data.title) + '" loading="lazy">'
@@ -354,6 +458,7 @@ permalink: /project.html
     } else {
       credits.remove();
     }
+
   } catch (error) {
     console.error("Project loading error:", error);
     title.textContent = "Unable to load project";
