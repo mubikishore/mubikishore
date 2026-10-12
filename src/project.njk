@@ -7,7 +7,7 @@ permalink: /project.html
 <main class="project" id="project">
   <a class="meta" href="/#work">← Back to work</a>
   <h1 id="project-title">Loading project…</h1>
-  <div class="meta" id="project-meta"></div>
+  <div class="meta project-meta" id="project-meta"></div>
   <div class="hero-project" id="project-hero"></div>
   <p class="intro" id="project-description"></p>
   <section class="project-videos" id="project-videos"></section>
@@ -21,13 +21,65 @@ permalink: /project.html
 </footer>
 
 <style>
-/* VIDEO LAYOUT */
+/* PROJECT HEADER */
+.project {
+  padding: 150px 22px 70px;
+  min-width: 0;
+}
+
+.project > .meta:first-child {
+  display: inline-block;
+  margin-bottom: 30px;
+}
+
+.project h1 {
+  max-width: 1100px;
+  margin: 0;
+  font-size: clamp(42px, 7vw, 100px);
+  line-height: .94;
+  letter-spacing: -.065em;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.project-meta {
+  margin-top: 18px;
+  line-height: 1.7;
+}
+
+.hero-project {
+  width: 100%;
+  margin-top: 42px;
+  background: #0a0a0a;
+  overflow: hidden;
+}
+
+.hero-project img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 78vh;
+  object-fit: contain;
+  object-position: center;
+  margin: 0 auto;
+}
+
+.project .intro {
+  max-width: 760px;
+  margin: 30px 0 0;
+  font-size: clamp(20px, 2.5vw, 32px);
+  line-height: 1.25;
+  letter-spacing: -.035em;
+}
+
+/* VIDEO GRID */
 .project-videos {
-  margin-top: 36px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 30px 18px;
   align-items: start;
+  gap: 26px 18px;
+  margin-top: 42px;
+  min-width: 0;
 }
 
 .project-video-item {
@@ -39,15 +91,19 @@ permalink: /project.html
   max-width: 100%;
 }
 
-/* INSTAGRAM CONTROLS ITS OWN EMBED HEIGHT */
+/*
+  Instagram sets the actual embed dimensions.
+  Do not force its blockquote into a 16:9 frame.
+*/
 .project-video-item.instagram blockquote.instagram-media {
+  display: block;
   margin: 0 !important;
   width: 100% !important;
   min-width: 0 !important;
-  max-width: 100% !important;
+  max-width: 540px !important;
 }
 
-/* YOUTUBE PLAYER */
+/* YOUTUBE */
 .project-video-frame {
   position: relative;
   width: 100%;
@@ -65,27 +121,23 @@ permalink: /project.html
   border: 0;
 }
 
-/* CAPTIONS */
+/* VIDEO CAPTIONS */
 .project-video-title {
-  margin: 10px 0 0;
-  color: #a5a5a5;
-  font-size: 11px;
-  line-height: 1.5;
-  font-weight: 400;
-  letter-spacing: .12em;
+  margin: 11px 0 0;
+  color: #a6a6a6;
+  font: 11px/1.5 monospace;
+  letter-spacing: .09em;
   text-transform: uppercase;
 }
 
-/* FALLBACK LINK */
 .project-video-link {
   display: inline-block;
   margin-top: 12px;
-  color: #b5b5b5;
-  font-size: 11px;
-  letter-spacing: .1em;
-  text-decoration: none;
+  padding-bottom: 5px;
   border-bottom: 1px solid #555;
-  padding-bottom: 4px;
+  color: #bbb;
+  font: 11px monospace;
+  letter-spacing: .08em;
 }
 
 .project-video-link:hover {
@@ -95,15 +147,59 @@ permalink: /project.html
 
 /* IMAGE GALLERY */
 .gallery {
-  margin-top: 44px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+  margin-top: 46px;
 }
 
-/* TABLET AND MOBILE */
+.gallery img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  background: #151515;
+}
+
+.project-credits {
+  margin-top: 46px;
+  color: #999;
+  font: 11px/1.8 monospace;
+  white-space: pre-line;
+}
+
+/* MOBILE */
 @media (max-width: 700px) {
+  .project {
+    padding: 115px 14px 50px;
+  }
+
+  .project > .meta:first-child {
+    margin-bottom: 24px;
+  }
+
+  .project h1 {
+    font-size: clamp(40px, 11vw, 68px);
+    line-height: .95;
+  }
+
+  .hero-project {
+    margin-top: 30px;
+  }
+
+  .hero-project img {
+    max-height: 65vh;
+  }
+
+  .project .intro {
+    margin-top: 24px;
+  }
+
   .project-videos {
-    grid-template-columns: 1fr;
-    gap: 26px;
-    margin-top: 28px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    margin-top: 30px;
   }
 
   .project-video-item.instagram blockquote.instagram-media {
@@ -111,6 +207,12 @@ permalink: /project.html
   }
 
   .gallery {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 32px;
+  }
+
+  .project-credits {
     margin-top: 32px;
   }
 }
@@ -212,14 +314,13 @@ permalink: /project.html
         ? item
         : String(item?.url || "");
 
-      let platform = typeof item === "object" && item
+      let platform = item && typeof item === "object"
         ? item.platform
         : null;
 
       if (platform !== "instagram" && platform !== "youtube") {
         try {
           const host = new URL(url).hostname.toLowerCase();
-
           platform =
             host === "instagram.com" ||
             host.endsWith(".instagram.com")
@@ -231,9 +332,7 @@ permalink: /project.html
       }
 
       return {
-        title: typeof item === "string"
-          ? ""
-          : String(item?.title || ""),
+        title: typeof item === "string" ? "" : String(item?.title || ""),
         url,
         platform
       };
@@ -251,7 +350,6 @@ permalink: /project.html
       wrapper.classList.add("instagram");
     } else {
       const id = youtubeId(item.url);
-
       if (id) {
         embedUrl = "https://www.youtube-nocookie.com/embed/" + id;
       }
@@ -262,8 +360,6 @@ permalink: /project.html
       blockquote.className = "instagram-media";
       blockquote.setAttribute("data-instgrm-permalink", embedUrl);
       blockquote.setAttribute("data-instgrm-version", "14");
-      blockquote.style.cssText =
-        "margin:0;width:100%;max-width:100%;";
 
       const fallback = document.createElement("a");
       fallback.href = embedUrl;
@@ -326,9 +422,7 @@ permalink: /project.html
     script.id = "instagram-embed-script";
     script.src = "https://www.instagram.com/embed.js";
     script.async = true;
-    script.onload = () => {
-      window.instgrm?.Embeds?.process();
-    };
+    script.onload = () => window.instgrm?.Embeds?.process();
 
     document.body.appendChild(script);
   }
@@ -355,9 +449,7 @@ permalink: /project.html
 
     document.title = data.title + " — MUBIKISHORE";
     title.textContent = data.title;
-    meta.textContent = [data.date, data.role]
-      .filter(Boolean)
-      .join(" · ");
+    meta.textContent = [data.date, data.role].filter(Boolean).join(" · ");
 
     if (data.hero) {
       hero.innerHTML =
@@ -368,14 +460,11 @@ permalink: /project.html
     }
 
     description.textContent = data.description || "";
-
-    if (!data.description) {
-      description.remove();
-    }
+    if (!data.description) description.remove();
 
     let videos = normalizeVideos(data.videos);
 
-    // Support older projects that use the single-video field.
+    // Keep support for existing projects using the single-video field.
     if (data.video && data.video.trim()) {
       const legacyUrl = data.video.trim();
 
@@ -384,7 +473,6 @@ permalink: /project.html
 
         try {
           const host = new URL(legacyUrl).hostname.toLowerCase();
-
           if (
             host === "instagram.com" ||
             host.endsWith(".instagram.com")
