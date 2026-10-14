@@ -10,7 +10,9 @@ permalink: /project.html
   <div class="meta project-meta" id="project-meta"></div>
   <div class="hero-project" id="project-hero"></div>
   <p class="intro" id="project-description"></p>
+
   <section class="project-videos" id="project-videos"></section>
+
   <div class="gallery" id="project-gallery"></div>
   <div class="project-credits" id="project-credits"></div>
 </main>
@@ -72,73 +74,80 @@ permalink: /project.html
   letter-spacing: -.035em;
 }
 
-/* VIDEO GRID — FULL AVAILABLE WIDTH */
+/* VIDEO TITLE LIST */
 .project-videos {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: 24px 18px;
   width: 100%;
-  max-width: none;
-  margin: 36px 0 0;
+  margin: 42px 0 0;
+  border-top: 1px solid #333;
+}
+
+.project-videos-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  color: #888;
+  font: 10px/1.5 monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid #333;
 }
 
 .project-video-item {
+  display: block;
   width: 100%;
   min-width: 0;
-  align-self: start;
-}
-
-/* INSTAGRAM EMBEDS
-   Let Instagram control its own embed dimensions. */
-.project-video-item.instagram blockquote.instagram-media {
-  display: block;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  margin: 0 !important;
-}
-
-/* YOUTUBE EMBEDS */
-.project-video-frame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background: #151515;
-}
-
-.project-video-frame iframe {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* VIDEO CAPTIONS */
-.project-video-title {
-  margin: 10px 0 0;
-  color: #999;
-  font: 11px/1.5 monospace;
-  letter-spacing: .1em;
-  text-transform: uppercase;
+  color: inherit;
+  border-bottom: 1px solid #333;
+  transition: padding .2s ease, background .2s ease;
 }
 
 .project-video-link {
-  display: inline-block;
-  margin-top: 12px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #555;
-  color: #bbb;
-  font: 11px monospace;
-  letter-spacing: .08em;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 72px;
+  padding: 14px 0;
 }
 
-.project-video-link:hover {
+.project-video-number {
+  color: #777;
+  font: 11px monospace;
+  letter-spacing: .05em;
+}
+
+.project-video-title {
+  min-width: 0;
+  margin: 0;
+  color: #eee;
+  font-size: clamp(17px, 2.2vw, 25px);
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: -.035em;
+  overflow-wrap: anywhere;
+}
+
+.project-video-arrow {
+  justify-self: end;
+  color: #888;
+  font-size: 20px;
+  transition: transform .2s ease, color .2s ease;
+}
+
+.project-video-item:hover .project-video-link {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.project-video-item:hover .project-video-title,
+.project-video-item:hover .project-video-arrow {
   color: #fff;
-  border-color: #fff;
+}
+
+.project-video-item:hover .project-video-arrow {
+  transform: translate(2px, -2px);
 }
 
 /* IMAGE GALLERY */
@@ -193,15 +202,23 @@ permalink: /project.html
   }
 
   .project-videos {
-    grid-template-columns: minmax(0, 1fr);
-    width: 100%;
-    max-width: none;
-    gap: 24px;
-    margin-top: 28px;
+    margin-top: 30px;
   }
 
-  .project-video-item.instagram blockquote.instagram-media {
-    max-width: 100% !important;
+  .project-video-link {
+    grid-template-columns: 32px minmax(0, 1fr) 20px;
+    gap: 10px;
+    min-height: 64px;
+    padding: 13px 0;
+  }
+
+  .project-video-title {
+    font-size: 18px;
+  }
+
+  .project-video-item:hover .project-video-link {
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .gallery {
@@ -241,59 +258,6 @@ permalink: /project.html
     })[char]);
   }
 
-  function youtubeId(value) {
-    try {
-      const url = new URL(value);
-      const host = url.hostname.toLowerCase();
-      let id = "";
-
-      if (host === "youtu.be" || host === "www.youtu.be") {
-        id = url.pathname.split("/")[1];
-      } else if ([
-        "youtube.com",
-        "www.youtube.com",
-        "m.youtube.com",
-        "youtube-nocookie.com",
-        "www.youtube-nocookie.com"
-      ].includes(host)) {
-        if (url.pathname === "/watch") {
-          id = url.searchParams.get("v");
-        } else if (/^\/(embed|shorts|live)\//.test(url.pathname)) {
-          id = url.pathname.split("/")[2];
-        }
-      }
-
-      return /^[a-zA-Z0-9_-]{11}$/.test(id || "") ? id : null;
-    } catch {
-      return null;
-    }
-  }
-
-  function instagramUrl(value) {
-    try {
-      const url = new URL(value);
-      const host = url.hostname.toLowerCase();
-
-      if (
-        host !== "instagram.com" &&
-        !host.endsWith(".instagram.com")
-      ) return null;
-
-      const match = url.pathname.match(
-        /^\/(reel|reels|p|tv)\/([A-Za-z0-9_-]+)\/?$/
-      );
-
-      if (!match) return null;
-
-      const type = match[1] === "reels" ? "reel" : match[1];
-
-      return "https://www.instagram.com/" +
-        type + "/" + match[2] + "/";
-    } catch {
-      return null;
-    }
-  }
-
   function normalizeVideos(value) {
     if (typeof value === "string") {
       try {
@@ -329,100 +293,94 @@ permalink: /project.html
       }
 
       return {
-        title: typeof item === "string" ? "" : String(item?.title || ""),
+        title: typeof item === "string"
+          ? ""
+          : String(item?.title || ""),
         url,
         platform
       };
     }).filter(item => item.url.trim());
   }
 
-  function makeVideo(item, index) {
-    const wrapper = document.createElement("article");
-    wrapper.className = "project-video-item";
+  function validVideoUrl(value) {
+    try {
+      const url = new URL(value);
+      const host = url.hostname.toLowerCase();
 
-    let embedUrl = null;
-
-    if (item.platform === "instagram") {
-      embedUrl = instagramUrl(item.url);
-      wrapper.classList.add("instagram");
-    } else {
-      const id = youtubeId(item.url);
-
-      if (id) {
-        embedUrl = "https://www.youtube-nocookie.com/embed/" + id;
+      if (url.protocol !== "https:" && url.protocol !== "http:") {
+        return false;
       }
+
+      return (
+        host === "youtu.be" ||
+        host.endsWith(".youtube.com") ||
+        host === "youtube.com" ||
+        host.endsWith(".instagram.com") ||
+        host === "instagram.com"
+      );
+    } catch {
+      return false;
     }
-
-    if (embedUrl && item.platform === "instagram") {
-      const blockquote = document.createElement("blockquote");
-      blockquote.className = "instagram-media";
-      blockquote.setAttribute("data-instgrm-permalink", embedUrl);
-      blockquote.setAttribute("data-instgrm-version", "14");
-
-      const fallback = document.createElement("a");
-      fallback.href = embedUrl;
-      fallback.target = "_blank";
-      fallback.rel = "noopener noreferrer";
-      fallback.textContent = "View Reel on Instagram ↗";
-
-      blockquote.appendChild(fallback);
-      wrapper.appendChild(blockquote);
-
-    } else if (embedUrl) {
-      const frame = document.createElement("div");
-      frame.className = "project-video-frame";
-
-      const iframe = document.createElement("iframe");
-      iframe.src = embedUrl;
-      iframe.title = item.title ||
-        (title.textContent + " video " + (index + 1));
-      iframe.loading = "lazy";
-      iframe.allow =
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-      iframe.referrerPolicy = "strict-origin-when-cross-origin";
-      iframe.allowFullscreen = true;
-
-      frame.appendChild(iframe);
-      wrapper.appendChild(frame);
-
-    } else {
-      const link = document.createElement("a");
-      link.className = "project-video-link";
-      link.href = item.url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.textContent = item.platform === "instagram"
-        ? "VIEW REEL ON INSTAGRAM ↗"
-        : "WATCH VIDEO ↗";
-
-      wrapper.appendChild(link);
-    }
-
-    if (item.title.trim()) {
-      const caption = document.createElement("h2");
-      caption.className = "project-video-title";
-      caption.textContent = item.title;
-      wrapper.appendChild(caption);
-    }
-
-    return wrapper;
   }
 
-  function loadInstagramScript() {
-    if (window.instgrm?.Embeds) {
-      window.instgrm.Embeds.process();
+  function makeVideoRow(item, index) {
+    const link = document.createElement("a");
+    link.className = "project-video-item";
+    link.href = item.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.setAttribute(
+      "aria-label",
+      "Open " + (item.title || "video " + (index + 1))
+    );
+
+    const row = document.createElement("span");
+    row.className = "project-video-link";
+
+    const number = document.createElement("span");
+    number.className = "project-video-number";
+    number.textContent = String(index + 1).padStart(2, "0");
+
+    const videoTitle = document.createElement("span");
+    videoTitle.className = "project-video-title";
+    videoTitle.textContent =
+      item.title.trim() || "Untitled film";
+
+    const arrow = document.createElement("span");
+    arrow.className = "project-video-arrow";
+    arrow.textContent = "↗";
+    arrow.setAttribute("aria-hidden", "true");
+
+    row.append(number, videoTitle, arrow);
+    link.appendChild(row);
+
+    return link;
+  }
+
+  function renderVideos(videos) {
+    videosContainer.replaceChildren();
+
+    if (!videos.length) {
+      videosContainer.remove();
       return;
     }
 
-    if (document.getElementById("instagram-embed-script")) return;
+    const heading = document.createElement("div");
+    heading.className = "project-videos-heading";
 
-    const script = document.createElement("script");
-    script.id = "instagram-embed-script";
-    script.src = "https://www.instagram.com/embed.js";
-    script.async = true;
-    script.onload = () => window.instgrm?.Embeds?.process();
+    const headingTitle = document.createElement("span");
+    headingTitle.textContent = "SELECTED FILMS";
 
-    document.body.appendChild(script);
+    const count = document.createElement("span");
+    count.textContent =
+      String(videos.length).padStart(2, "0") + " VIDEOS";
+
+    heading.append(headingTitle, count);
+    videosContainer.appendChild(heading);
+
+    videos.forEach((item, index) => {
+      videosContainer.appendChild(makeVideoRow(item, index));
+    });
   }
 
   if (!slug) {
@@ -447,7 +405,9 @@ permalink: /project.html
 
     document.title = data.title + " — MUBIKISHORE";
     title.textContent = data.title;
-    meta.textContent = [data.date, data.role].filter(Boolean).join(" · ");
+    meta.textContent = [data.date, data.role]
+      .filter(Boolean)
+      .join(" · ");
 
     if (data.hero) {
       hero.innerHTML =
@@ -458,47 +418,29 @@ permalink: /project.html
     }
 
     description.textContent = data.description || "";
-    if (!data.description) description.remove();
+
+    if (!data.description) {
+      description.remove();
+    }
 
     let videos = normalizeVideos(data.videos);
 
-    // Support older projects that use the single-video field.
-    if (data.video && data.video.trim()) {
+    // Keep support for projects using the older single-video field.
+    if (typeof data.video === "string" && data.video.trim()) {
       const legacyUrl = data.video.trim();
 
       if (!videos.some(item => item.url.trim() === legacyUrl)) {
-        let platform = "youtube";
-
-        try {
-          const host = new URL(legacyUrl).hostname.toLowerCase();
-
-          if (
-            host === "instagram.com" ||
-            host.endsWith(".instagram.com")
-          ) platform = "instagram";
-        } catch {}
-
         videos.unshift({
           title: "Main Film",
           url: legacyUrl,
-          platform
+          platform: "youtube"
         });
       }
     }
 
-    if (videos.length) {
-      videosContainer.replaceChildren();
+    videos = videos.filter(item => validVideoUrl(item.url));
 
-      videos.forEach((item, index) => {
-        videosContainer.appendChild(makeVideo(item, index));
-      });
-
-      if (videos.some(item => item.platform === "instagram")) {
-        loadInstagramScript();
-      }
-    } else {
-      videosContainer.remove();
-    }
+    renderVideos(videos);
 
     let images = data.gallery || [];
 
@@ -512,13 +454,20 @@ permalink: /project.html
 
     if (Array.isArray(images) && images.length) {
       gallery.innerHTML = images.map(item => {
-        const src = typeof item === "string" ? item : item.image;
+        const src = typeof item === "string"
+          ? item
+          : item?.image;
 
         return src
           ? '<img src="' + safe(src) +
-            '" alt="' + safe(data.title) + '" loading="lazy">'
+            '" alt="' + safe(data.title) +
+            '" loading="lazy">'
           : "";
       }).join("");
+
+      if (!gallery.innerHTML.trim()) {
+        gallery.remove();
+      }
     } else {
       gallery.remove();
     }
