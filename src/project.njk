@@ -23,7 +23,7 @@ permalink: /project.html
 <style>
 /* PROJECT HEADER */
 .project {
-  padding: 145px 22px 70px;
+  padding: 165px 22px 70px;
   min-width: 0;
 }
 
@@ -72,12 +72,12 @@ permalink: /project.html
   letter-spacing: -.035em;
 }
 
-/* VIDEO GRID — FULL AVAILABLE WIDTH */
+/* VIDEO GRID */
 .project-videos {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
-  gap: 24px 18px;
+  gap: 24px;
   width: 100%;
   max-width: none;
   margin: 36px 0 0;
@@ -89,16 +89,24 @@ permalink: /project.html
   align-self: start;
 }
 
-/* INSTAGRAM EMBEDS */
+/* INSTAGRAM
+   Let Instagram control its own embed dimensions.
+   Keep the embed aligned to the top of its grid column. */
+.project-video-item.instagram {
+  align-self: start;
+  min-width: 0;
+  width: 100%;
+}
+
 .project-video-item.instagram blockquote.instagram-media {
   display: block;
   width: 100% !important;
   min-width: 0 !important;
-  max-width: 100% !important;
+  max-width: 540px !important;
   margin: 0 !important;
 }
 
-/* YOUTUBE EMBEDS */
+/* YOUTUBE */
 .project-video-frame {
   position: relative;
   width: 100%;
@@ -167,7 +175,7 @@ permalink: /project.html
 /* MOBILE */
 @media (max-width: 700px) {
   .project {
-    padding: 112px 14px 50px;
+    padding: 125px 14px 50px;
   }
 
   .project-back {
@@ -200,7 +208,7 @@ permalink: /project.html
   }
 
   .project-video-item.instagram blockquote.instagram-media {
-    max-width: 100% !important;
+    max-width: 400px !important;
   }
 
   .gallery {
