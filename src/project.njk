@@ -23,7 +23,6 @@ permalink: /project.html
 </footer>
 
 <style>
-/* PROJECT HEADER */
 .project {
   padding: 190px 22px 70px;
   min-width: 0;
@@ -98,8 +97,8 @@ permalink: /project.html
   width: 100%;
   min-width: 0;
   color: inherit;
+  text-decoration: none;
   border-bottom: 1px solid #333;
-  transition: padding .2s ease, background .2s ease;
 }
 
 .project-video-link {
@@ -110,6 +109,7 @@ permalink: /project.html
   width: 100%;
   min-height: 72px;
   padding: 14px 0;
+  transition: padding .2s ease;
 }
 
 .project-video-number {
@@ -129,11 +129,38 @@ permalink: /project.html
   overflow-wrap: anywhere;
 }
 
+/* CSS-DRAWN ARROW — NO EMOJI */
 .project-video-arrow {
+  position: relative;
   justify-self: end;
+  display: block;
+  width: 20px;
+  height: 20px;
   color: #888;
-  font-size: 20px;
   transition: transform .2s ease, color .2s ease;
+}
+
+.project-video-arrow::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+}
+
+.project-video-arrow::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 2px;
+  width: 15px;
+  height: 1.5px;
+  background: currentColor;
+  transform: rotate(-45deg);
+  transform-origin: right center;
 }
 
 .project-video-item:hover .project-video-link {
@@ -219,6 +246,11 @@ permalink: /project.html
   .project-video-item:hover .project-video-link {
     padding-left: 0;
     padding-right: 0;
+  }
+
+  .project-video-arrow {
+    width: 18px;
+    height: 18px;
   }
 
   .gallery {
@@ -348,7 +380,6 @@ permalink: /project.html
 
     const arrow = document.createElement("span");
     arrow.className = "project-video-arrow";
-    arrow.textContent = "↗";
     arrow.setAttribute("aria-hidden", "true");
 
     row.append(number, videoTitle, arrow);
@@ -425,7 +456,7 @@ permalink: /project.html
 
     let videos = normalizeVideos(data.videos);
 
-    // Keep support for projects using the older single-video field.
+    // Support projects using the older single-video field.
     if (typeof data.video === "string" && data.video.trim()) {
       const legacyUrl = data.video.trim();
 
