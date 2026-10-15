@@ -1,1 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INVOICES — MUBIKISHORE</title>
+<link rel="stylesheet" href="/admin/styles.css">
+<style>
+.inv-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0;border-bottom:1px solid #292929;padding-bottom:14px}
+.inv-tabs button,.inv-btn{border:1px solid #333;background:transparent;color:#ddd;padding:11px 14px;cursor:pointer;font-size:11px;letter-spacing:.06em}
+.inv-tabs button.active,.inv-btn.primary{background:#f1f1ed;color:#080808;border-color:#f1f1ed}
+.inv-btn.danger{color:#d08f8f}
+.inv-panel{display:none}.inv-panel.active{display:block}
+.inv-form{max-width:1100px}.inv-form label,.inv-settings label,.client-form label{display:block;color:#888;font-size:10px;letter-spacing:.12em;margin:15px 0 7px}
+.inv-form input,.inv-form textarea,.inv-form select,.inv-settings input,.inv-settings textarea,.client-form input,.client-form textarea{width:100%;padding:12px;background:#101010;color:#f1f1ed;border:1px solid #333;border-radius:0}
+.inv-form textarea,.inv-settings textarea,.client-form textarea{min-height:76px;resize:vertical}
+.inv-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.inv-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.inv-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:24px 0}
+.inv-toolbar input,.inv-toolbar select{background:#101010;color:#eee;border:1px solid #333;padding:11px}
+.inv-table-wrap{overflow-x:auto;border-top:1px solid #292929}
+.inv-table{width:100%;border-collapse:collapse;min-width:680px}
+.inv-table th,.inv-table td{text-align:left;padding:15px 10px;border-bottom:1px solid #242424;font-size:12px;vertical-align:middle}
+.inv-table th{font-size:9px;letter-spacing:.12em;color:#777;font-weight:400}
+.inv-table td.muted{color:#888}
+.inv-actions{display:flex;gap:6px;flex-wrap:wrap}
+.inv-status{display:inline-block;border:1px solid #444;padding:5px 7px;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#bbb}
+.inv-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#292929;border:1px solid #292929;margin:24px 0}
+.inv-summary>div{background:#080808;padding:18px;min-height:100px}
+.inv-summary small{color:#777;font-size:9px;letter-spacing:.12em}
+.inv-summary strong{display:block;font-weight:400;font-size:24px;margin-top:20px;overflow-wrap:anywhere}
+.inv-items{width:100%;border-collapse:collapse;margin-top:24px}
+.inv-items th,.inv-items td{padding:8px 5px;border-bottom:1px solid #292929;text-align:left;font-size:12px}
+.inv-items input{width:100%;min-width:60px;padding:10px;background:#101010;color:#eee;border:1px solid #333}
+.inv-items .desc{min-width:180px}.inv-items .qty{min-width:70px}.inv-items .rate{min-width:100px}.inv-items .amount{white-space:nowrap}
+.inv-totals{margin:20px 0 20px auto;max-width:320px}
+.inv-total-row{display:flex;justify-content:space-between;padding:8px 0;color:#aaa;font-size:12px}
+.inv-total-row.final{border-top:1px solid #555;padding-top:15px;color:#fff;font-size:18px}
+.inv-statusline{color:#aaa;min-height:20px;font-size:12px;margin-top:14px;white-space:pre-wrap}
+.inv-subhead{font-size:12px;letter-spacing:.1em;margin-top:36px;border-bottom:1px solid #292929;padding-bottom:12px}
+.inv-client-box{border:1px solid #292929;padding:18px;margin:18px 0}
+.inv-hidden{display:none!important}
+.inv-empty{padding:30px 0;color:#777;font-size:13px}
+.inv-paper{background:#fff;color:#111;padding:36px;max-width:900px;margin:20px auto;font-family:Arial,sans-serif}
+.inv-paper h2{font-weight:400;font-size:32px;letter-spacing:-1px;margin:0}
+.inv-paper .paper-muted{color:#666;font-size:12px;line-height:1.6}
+.inv-paper .paper-head{display:flex;justify-content:space-between;gap:30px;border-bottom:1px solid #ddd;padding-bottom:24px}
+.inv-paper .paper-meta{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin:28px 0}
+.inv-paper table{width:100%;border-collapse:collapse;margin-top:20px}
+.inv-paper th,.inv-paper td{padding:12px 6px;border-bottom:1px solid #ddd;text-align:left;font-size:12px}
+.inv-paper th{font-size:10px;color:#555}
+.inv-paper .paper-totals{width:280px;margin:20px 0 20px auto}
+.inv-paper .paper-total{display:flex;justify-content:space-between;padding:7px 0;font-size:13px}
+.inv-paper .paper-grand{border-top:1px solid #111;padding-top:13px;font-size:18px}
+.inv-paper .paper-foot{border-top:1px solid #ddd;padding-top:20px;margin-top:40px;font-size:11px;color:#555;line-height:1.7}
+@media(max-width:800px){.inv-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.inv-grid3{grid-template-columns:1fr}.inv-paper{padding:18px}.inv-paper .paper-head,.inv-paper .paper-meta{display:block}.inv-paper .paper-meta>div{margin:18px 0}}
+@media(max-width:520px){.inv-grid,.inv-summary{grid-template-columns:1fr}.inv-summary>div{min-height:80px}.inv-summary strong{margin-top:12px}}
+@media print{
+ body{background:#fff!important;color:#111!important}
+ .top,.sidebar,.inv-tabs,.content>.eyebrow,.content>h1,.content>.intro,.inv-toolbar,.inv-summary,.inv-panel:not(#print-panel),#invoice-form-panel,#settings-panel,#clients-panel,#list-panel,.no-print{display:none!important}
+ .layout{display:block!important;min-height:0!important}.content{padding:0!important;max-width:none!important}
+ .inv-paper{display:block!important;max-width:none;margin:0;padding:10mm;box-shadow:none}
+ .inv-paper *{color:#111!important}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <a href="/admin/" class="brand">MUBIKISHORE</a>
+  <div class="top-right"><button id="logout" class="logout">SIGN OUT</button></div>
+</div>
 
+<div class="layout">
+<aside class="sidebar">
+  <div class="section-label">WORKSPACE</div>
+  <button class="nav-button" data-nav="dashboard" onclick="location.href='/admin/dashboard.html'">Dashboard</button>
+  <button class="nav-button" data-nav="projects" onclick="location.href='/admin/projects.html'">Projects</button>
+  <button class="nav-button" data-nav="store" onclick="location.href='/admin/store.html'">Store</button>
+  <button class="nav-button" data-nav="other" onclick="location.href='/admin/other.html'">Other Content</button>
+  <div class="section-label">BUSINESS</div>
+  <button class="nav-button" data-nav="invoices">Invoices</button>
+  <button class="nav-button" data-nav="settings" onclick="location.href='/admin/settings.html'">Settings</button>
+</aside>
+
+<main class="content">
+  <div class="eyebrow">BUSINESS / FINANCE</div>
+  <h1>Invoices</h1>
+  <p class="intro">Create invoices, manage clients, record payments and keep track of outstanding balances.</p>
+
+  <div id="inv-message" class="inv-statusline" role="status"></div>
+
+  <div class="inv-summary">
+    <div><small>TOTAL INVOICED</small><strong id="sum-total">₹0</strong></div>
+    <div><small>AMOUNT RECEIVED</small><strong id="sum-paid">₹0</strong></div>
+    <div><small>OUTSTANDING</small><strong id="sum-outstanding">₹0</strong></div>
+    <div><small>OVERDUE</small><strong id="sum-overdue">₹0</strong></div>
+  </div>
+
+  <div class="inv-tabs">
+    <button class="active" data-tab="list-panel">INVOICE HISTORY</button>
+    <button data-tab="invoice-form-panel">NEW INVOICE</button>
+    <button data-tab="clients-panel">CLIENTS</button>
+    <button data-tab="settings-panel">BUSINESS DETAILS</button>
+  </div>
+
+  <section id="list-panel" class="inv-panel active">
+    <div class="inv-toolbar">
+      <input id="search-invoices" type="search" placeholder="Search invoices or clients">
+      <select id="filter-status">
+        <option value="">All statuses</option>
+        <option value="draft">Draft</option>
+        <option value="sent">Sent</option>
+        <option value="paid">Paid</option>
+        <option value="partially_paid">Partially paid</option>
+        <option value="overdue">Overdue</option>
+      </select>
+      <button class="inv-btn primary" id="new-invoice">+ NEW INVOICE</button>
+    </div>
+    <div class="inv-table-wrap">
+      <table class="inv-table">
+        <thead><tr><th>INVOICE</th><th>CLIENT</th><th>DATE</th><th>TOTAL</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+        <tbody id="invoice-rows"><tr><td colspan="6">Loading invoices…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="invoice-form-panel" class="inv-panel">
+    <form id="invoice-form" class="inv-form">
+      <input type="hidden" id="edit-id">
+      <h2 id="form-heading">New invoice</h2>
+      <div class="inv-grid">
+        <div><label for="client-select">CLIENT</label><select id="client-select" required><option value="">Choose a client</option></select></div>
+        <div><label for="invoice-status">STATUS</label><select id="invoice-status"><option value="draft">Draft</option><option value="sent">Sent</option></select></div>
+        <div><label for="invoice-date">INVOICE DATE</label><input type="date" id="invoice-date" required></div>
+        <div><label for="due-date">DUE DATE</label><input type="date" id="due-date" required></div>
+      </div>
+
+      <div class="inv-subhead">LINE ITEMS</div>
+      <div style="overflow-x:auto">
+        <table class="inv-items">
+          <thead><tr><th>DESCRIPTION</th><th>QTY</th><th>RATE (₹)</th><th>AMOUNT</th><th></th></tr></thead>
+          <tbody id="item-rows"></tbody>
+        </table>
+      </div>
+      <button type="button" class="inv-btn" id="add-item">+ ADD LINE ITEM</button>
+
+      <div class="inv-grid" style="margin-top:24px">
+        <div><label for="tax-percent">TAX (%)</label><input type="number" id="tax-percent" min="0" max="100" step="0.001" value="0"></div>
+        <div><label for="invoice-notes">NOTES</label><textarea id="invoice-notes" placeholder="Optional notes"></textarea></div>
+      </div>
+
+      <div class="inv-totals">
+        <div class="inv-total-row"><span>Subtotal</span><strong id="form-subtotal">₹0.00</strong></div>
+        <div class="inv-total-row"><span>Tax</span><strong id="form-tax">₹0.00</strong></div>
+        <div class="inv-total-row final"><span>Total</span><strong id="form-total">₹0.00</strong></div>
+      </div>
+
+      <label for="invoice-terms">PAYMENT TERMS</label>
+      <textarea id="invoice-terms">Payment due within 7 days.</textarea>
+      <div class="inv-actions" style="margin-top:24px">
+        <button type="submit" class="inv-btn primary" id="save-invoice">SAVE INVOICE</button>
+        <button type="button" class="inv-btn" id="cancel-invoice">CANCEL</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="clients-panel" class="inv-panel">
+    <h2>Clients</h2>
+    <form id="client-form" class="client-form">
+      <input type="hidden" id="client-id">
+      <div class="inv-grid">
+        <div><label for="client-name">CLIENT / BUSINESS NAME *</label><input id="client-name" required></div>
+        <div><label for="client-email">EMAIL</label><input id="client-email" type="email"></div>
+        <div><label for="client-phone">PHONE</label><input id="client-phone"></div>
+        <div><label for="client-gstin">GSTIN</label><input id="client-gstin"></div>
+        <div><label for="client-pan">PAN</label><input id="client-pan"></div>
+      </div>
+      <label for="client-address">BILLING ADDRESS</label>
+      <textarea id="client-address"></textarea>
+      <div class="inv-actions" style="margin-top:18px">
+        <button class="inv-btn primary" type="submit">SAVE CLIENT</button>
+        <button class="inv-btn" type="button" id="reset-client">CLEAR</button>
+      </div>
+    </form>
+    <div class="inv-table-wrap" style="margin-top:30px">
+      <table class="inv-table">
+        <thead><tr><th>CLIENT</th><th>EMAIL</th><th>PHONE</th><th>ACTIONS</th></tr></thead>
+        <tbody id="client-rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="settings-panel" class="inv-panel">
+    <h2>Business details</h2>
+    <p class="intro">These details are saved for future invoices. Previously saved invoices retain their own snapshots.</p>
+    <form id="settings-form" class="inv-settings">
+      <div class="inv-grid">
+        <div><label for="business-name">BUSINESS NAME</label><input id="business-name" required></div>
+        <div><label for="business-email">BUSINESS EMAIL</label><input id="business-email" type="email"></div>
+        <div><label for="business-phone">PHONE</label><input id="business-phone"></div>
+        <div><label for="business-gstin">GSTIN</label><input id="business-gstin"></div>
+        <div><label for="business-pan">PAN</label><input id="business-pan"></div>
+        <div><label for="business-prefix">INVOICE PREFIX</label><input id="business-prefix" value="MUBI" required></div>
+      </div>
+      <label for="business-address">BUSINESS ADDRESS</label><textarea id="business-address"></textarea>
+      <div class="inv-subhead">PAYMENT DETAILS</div>
+      <div class="inv-grid">
+        <div><label for="business-upi">UPI ID</label><input id="business-upi"></div>
+        <div><label for="bank-name">BANK NAME</label><input id="bank-name"></div>
+        <div><label for="bank-account-name">ACCOUNT HOLDER NAME</label><input id="bank-account-name"></div>
+        <div><label for="bank-account-number">ACCOUNT NUMBER</label><input id="bank-account-number"></div>
+        <div><label for="bank-ifsc">IFSC</label><input id="bank-ifsc"></div>
+        <div><label for="bank-branch">BRANCH</label><input id="bank-branch"></div>
+        <div><label for="default-tax">DEFAULT TAX (%)</label><input type="number" id="default-tax" min="0" max="100" step="0.001"></div>
+      </div>
+      <label for="default-terms">DEFAULT PAYMENT TERMS</label><textarea id="default-terms">Payment due within 7 days.</textarea>
+      <button type="submit" class="inv-btn primary" style="margin-top:20px">SAVE BUSINESS DETAILS</button>
+    </form>
+  </section>
+
+  <section id="print-panel" class="inv-panel">
+    <div class="inv-toolbar no-print">
+      <button class="inv-btn" id="back-to-list">← BACK</button>
+      <div class="inv-actions">
+        <button class="inv-btn" id="record-payment">RECORD PAYMENT</button>
+        <button class="inv-btn primary" id="print-invoice">PRINT / SAVE PDF</button>
+      </div>
+    </div>
+    <div id="payment-box" class="inv-client-box no-print inv-hidden">
+      <h3>Record payment</h3>
+      <form id="payment-form">
+        <div class="inv-grid">
+          <div><label for="payment-amount">AMOUNT (₹)</label><input id="payment-amount" type="number" min="0.01" step="0.01" required></div>
+          <div><label for="payment-date">PAYMENT DATE</label><input id="payment-date" type="date" required></div>
+          <div><label for="payment-method">METHOD</label><select id="payment-method"><option>UPI</option><option>Bank transfer</option><option>Cash</option><option>Other</option></select></div>
+          <div><label for="payment-reference">REFERENCE / TRANSACTION ID</label><input id="payment-reference"></div>
+        </div>
+        <label for="payment-notes">NOTES</label><textarea id="payment-notes"></textarea>
+        <button class="inv-btn primary" type="submit">SAVE PAYMENT</button>
+      </form>
+    </div>
+    <div id="invoice-paper" class="inv-paper"></div>
+  </section>
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/admin/config.js"></script>
+<script src="/admin/app.js"></script>
+<script>
+(function(){
