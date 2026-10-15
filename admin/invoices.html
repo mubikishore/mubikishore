@@ -704,4 +704,355 @@
           <div>
             <strong>BILL TO</strong>
             <div class="paper-muted">
-              ${esc(client.name || "")}<
+              ${esc(client.name || "")}<br>
+              ${esc(client.billing_address || "").replace(/\n/g, "<br>")}<br>
+              ${esc(client.email || "")}<br>
+              ${client.gstin ? "GSTIN: " + esc(client.gstin) : ""}
+            </div>
+          </div>
+          <div>
+            <strong>PAYMENT DETAILS</strong>
+            <div class="paper-muted">
+              ${paymentDetails.join("<br>") || "Payment details not provided."}
+            </div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+
+        <div class="paper-totals">
+          <div class="paper-total"><span>Subtotal</span><span>${money(invoice.subtotal)}</span></div>
+          <div class="paper-total"><span>Tax (${Number(invoice.tax_percent)}%)</span><span>${money(invoice.tax_amount)}</span></div>
+          <div class="paper-total paper-grand"><strong>Total</strong><strong>${money(invoice.total)}</strong></div>
+          <div class="paper-total"><span>Paid</span><span>${money(invoice.amount_paid)}</span></div>
+          <div class="paper-total"><strong>Balance due</strong><strong>${money(Math.max(0, Number(invoice.total) - Number(invoice.amount_paid || 0)))}</strong></div>
+        </div>
+
+        <div class="paper-foot">
+          ${invoice.notes ? esc(invoice.notes).replace(/\n/g, "<br>") + "<br><br>" : ""}
+          <strong>Terms</strong><br>
+          ${esc(invoice.terms || "").replace(/\n/g, "<br>")}<br><br>
+          Thank you.
+        </div>
+      </div>
+    `;
+
+    $("payment-box").classList.add("inv-hidden");
+    goTab("print-panel");
+  }
+
+  document.addEventListener("click", async event => {
+    const editClient = event.target.closest(".edit-client");
+    const deleteClient = event.target.closest(".delete-client");
+    const open = event.target.closest(".open-invoice");
+    const editInv = event.target.closest(".edit-invoice");
+
+    try {
+      if (editClient) {
+        const client = clients.find(item => item.id === editClient.dataset.id);
+        if (!client) return;
+
+        $("client-id").value = client.id;
+        $("client-name").value = client.name || "";
+        $("client-email").value = client.email || "";
+        $("client-phone").value = client.phone || "";
+        $("client-gstin").value = client.gstin || "";
+        $("client-pan").value = client.pan || "";
+        $("client-address").value = client.billing_address || "";
+        goTab("clients-panel");
+      }
+
+      if (deleteClient) {
+        if (!confirm("Delete this client?")) return;
+
+        const { error } = await db
+          .from("invoice_clients")
+          .delete()
+          .eq("id", deleteClient.dataset.id);
+
+        if (error) throw error;
+
+        await loadClients();
+        say("Client deleted.");
+      }
+
+      if (open) await openInvoice(open.dataset.id);
+      if (editInv) editInvoice(editInv.dataset.id);
+    } catch (error) {
+      say(error.message || String(error));
+    }
+  });
+
+  $("client-form").onsubmit = async event => {
+    event.preventDefault();
+    say("Saving client…");
+
+    try {
+      const id = $("client-id").value;
+
+      const client = {
+        name: $("client-name").value.trim(),
+        email: $("client-email").value.trim(),
+        phone: $("client-phone").value.trim(),
+        gstin: $("client-gstin").value.trim(),
+        pan: $("client-pan").value.trim(),
+        billing_address: $("client-address").value.trim(),
+        updated_at: new Date().toISOString()
+      };
+
+      const result = id
+        ? await db.from("invoice_clients").update(client).eq("id", id)
+        : await db.from("invoice_clients").insert(client);
+
+      if (result.error) throw result.error;
+
+      $("client-form").reset();
+      $("client-id").value = "";
+      await loadClients();
+      say("Client saved.");
+    } catch (error) {
+      say("Could not save client: " + (error.message || String(error)));
+    }
+  };
+
+  $("settings-form").onsubmit = async event => {
+    event.preventDefault();
+    say("Saving business details…");
+
+    try {
+      const obj = {
+        id: 1,
+        business_name: $("business-name").value.trim(),
+        business_address: $("business-address").value.trim(),
+        business_email: $("business-email").value.trim(),
+        business_phone: $("business-phone").value.trim(),
+        business_gstin: $("business-gstin").value.trim(),
+        business_pan: $("business-pan").value.trim(),
+        upi_id: $("business-upi").value.trim(),
+        bank_name: $("bank-name").value.trim(),
+        bank_account_name: $("bank-account-name").value.trim(),
+        bank_account_number: $("bank-account-number").value.trim(),
+        bank_ifsc: $("bank-ifsc").value.trim(),
+        bank_branch: $("bank-branch").value.trim(),
+        invoice_prefix: $("business-prefix").value.trim() || "MUBI",
+        default_terms: $("default-terms").value.trim(),
+        default_tax_percent: Number($("default-tax").value) || 0,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await db
+        .from("invoice_settings")
+        .upsert(obj, { onConflict: "id" });
+
+      if (error) throw error;
+
+      settings = obj;
+      say("Business details saved successfully.");
+    } catch (error) {
+      say("Could not save business details: " + (error.message || String(error)));
+    }
+  };
+
+  $("invoice-form").onsubmit = async event => {
+    event.preventDefault();
+    say("Saving invoice…");
+
+    try {
+      const client = clients.find(item => item.id === $("client-select").value);
+      if (!client) throw new Error("Choose a client first.");
+
+      const items = itemData();
+      if (!items.length) throw new Error("Add at least one valid line item.");
+
+      const sums = calculate();
+      const id = $("invoice-id").value;
+      const status = $("invoice-status-hidden").value || "draft";
+
+      const clientSnapshot = {
+        name: client.name,
+        email: client.email,
+        phone: client.phone,
+        billing_address: client.billing_address,
+        gstin: client.gstin,
+        pan: client.pan
+      };
+
+      const businessSnapshot = {
+        business_name: settings.business_name,
+        business_address: settings.business_address,
+        business_email: settings.business_email,
+        business_phone: settings.business_phone,
+        business_gstin: settings.business_gstin,
+        business_pan: settings.business_pan,
+        upi_id: settings.upi_id,
+        bank_name: settings.bank_name,
+        bank_account_name: settings.bank_account_name,
+        bank_account_number: settings.bank_account_number,
+        bank_ifsc: settings.bank_ifsc,
+        bank_branch: settings.bank_branch
+      };
+
+      const invoice = {
+        invoice_date: $("invoice-date").value,
+        due_date: $("due-date").value,
+        client_id: client.id,
+        client_snapshot: clientSnapshot,
+        business_snapshot: businessSnapshot,
+        currency: "INR",
+        status,
+        notes: $("invoice-notes").value.trim(),
+        terms: $("invoice-terms").value.trim(),
+        tax_percent: Number($("tax-percent").value) || 0,
+        subtotal: sums.subtotal,
+        tax_amount: sums.tax,
+        total: sums.total,
+        updated_at: new Date().toISOString()
+      };
+
+      let saved;
+
+      if (id) {
+        const { data, error } = await db
+          .from("invoices")
+          .update(invoice)
+          .eq("id", id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        saved = data;
+
+        const { error: deleteError } = await db
+          .from("invoice_items")
+          .delete()
+          .eq("invoice_id", id);
+
+        if (deleteError) throw deleteError;
+      } else {
+        const { data: number, error: numberError } =
+          await db.rpc("next_mubi_invoice_number");
+
+        if (numberError) throw numberError;
+
+        invoice.invoice_number = number;
+
+        const { data, error } = await db
+          .from("invoices")
+          .insert(invoice)
+          .select()
+          .single();
+
+        if (error) throw error;
+        saved = data;
+      }
+
+      const { error: itemError } = await db
+        .from("invoice_items")
+        .insert(items.map(item => ({ ...item, invoice_id: saved.id })));
+
+      if (itemError) throw itemError;
+
+      await loadInvoices();
+      say("Invoice saved: " + saved.invoice_number);
+      await openInvoice(saved.id);
+    } catch (error) {
+      say("Could not save invoice: " + (error.message || String(error)));
+    }
+  };
+
+  $("payment-form").onsubmit = async event => {
+    event.preventDefault();
+    if (!currentInvoice) return;
+
+    const amount = Number($("payment-amount").value);
+    const remaining = Number(currentInvoice.total) - Number(currentInvoice.amount_paid || 0);
+
+    if (amount <= 0 || amount > remaining + 0.001) {
+      say("Enter an amount up to the remaining balance of " + money(remaining));
+      return;
+    }
+
+    say("Saving payment…");
+
+    try {
+      const payment = {
+        invoice_id: currentInvoice.id,
+        amount,
+        payment_date: $("payment-date").value,
+        method: $("payment-method").value,
+        reference: $("payment-reference").value.trim(),
+        notes: $("payment-notes").value.trim()
+      };
+
+      const { error } = await db.from("invoice_payments").insert(payment);
+      if (error) throw error;
+
+      const paid = Math.round((Number(currentInvoice.amount_paid || 0) + amount) * 100) / 100;
+      const status = paid >= Number(currentInvoice.total) ? "paid" : "partially_paid";
+
+      const { error: updateError } = await db
+        .from("invoices")
+        .update({
+          amount_paid: paid,
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", currentInvoice.id);
+
+      if (updateError) throw updateError;
+
+      const invoiceId = currentInvoice.id;
+      $("payment-form").reset();
+      await loadInvoices();
+      await openInvoice(invoiceId);
+      say("Payment recorded.");
+    } catch (error) {
+      say("Could not save payment: " + (error.message || String(error)));
+    }
+  };
+
+  async function init() {
+    if (!db) {
+      say("Supabase client not found. Check /admin/config.js.");
+      return;
+    }
+
+    try {
+      const { data: { session }, error } = await db.auth.getSession();
+      if (error) throw error;
+
+      if (!session) {
+        location.href = "/admin/login.html";
+        return;
+      }
+
+      await loadSettings();
+      await loadClients();
+      await loadInvoices();
+
+      $("invoice-date").value = today();
+      $("payment-date").value = today();
+    } catch (error) {
+      say("Could not load invoice manager: " + (error.message || String(error)) +
+        ". Check that the invoice SQL tables and Supabase permissions are set up.");
+    }
+  }
+
+  if (!$("invoice-status-hidden")) {
+    const hidden = document.createElement("input");
+    hidden.type = "hidden";
+    hidden.id = "invoice-status-hidden";
+    hidden.value = "draft";
+    $("invoice-form").prepend(hidden);
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
