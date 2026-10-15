@@ -1,438 +1,795 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>INVOICES — MUBIKISHORE</title>
-<link rel="stylesheet" href="/admin/styles.css">
-<style>
-.inv-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0;border-bottom:1px solid #292929;padding-bottom:14px}
-.inv-tabs button,.inv-btn{border:1px solid #333;background:transparent;color:#ddd;padding:11px 14px;cursor:pointer;font-size:11px;letter-spacing:.06em}
-.inv-tabs button.active,.inv-btn.primary{background:#f1f1ed;color:#080808;border-color:#f1f1ed}
-.inv-btn.danger{color:#d08f8f}
-.inv-panel{display:none}.inv-panel.active{display:block}
-.inv-form{max-width:1100px}
-.inv-form label,.inv-settings label,.client-form label{display:block;color:#888;font-size:10px;letter-spacing:.12em;margin:15px 0 7px}
-.inv-form input,.inv-form textarea,.inv-form select,.inv-settings input,.inv-settings textarea,.client-form input,.client-form textarea{width:100%;padding:12px;background:#101010;color:#f1f1ed;border:1px solid #333;border-radius:0}
-.inv-form textarea,.inv-settings textarea,.client-form textarea{min-height:76px;resize:vertical}
-.inv-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.inv-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:24px 0}
-.inv-toolbar input,.inv-toolbar select{background:#101010;color:#eee;border:1px solid #333;padding:11px}
-.inv-table-wrap{overflow-x:auto;border-top:1px solid #292929}
-.inv-table{width:100%;border-collapse:collapse;min-width:680px}
-.inv-table th,.inv-table td{text-align:left;padding:15px 10px;border-bottom:1px solid #242424;font-size:12px;vertical-align:middle}
-.inv-table th{font-size:9px;letter-spacing:.12em;color:#777;font-weight:400}
-.inv-actions{display:flex;gap:6px;flex-wrap:wrap}
-.inv-status{display:inline-block;border:1px solid #444;padding:5px 7px;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#bbb}
-.inv-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#292929;border:1px solid #292929;margin:24px 0}
-.inv-summary>div{background:#080808;padding:18px;min-height:100px}
-.inv-summary small{color:#777;font-size:9px;letter-spacing:.12em}
-.inv-summary strong{display:block;font-weight:400;font-size:24px;margin-top:20px;overflow-wrap:anywhere}
-.inv-items{width:100%;border-collapse:collapse;margin-top:24px}
-.inv-items th,.inv-items td{padding:8px 5px;border-bottom:1px solid #292929;text-align:left;font-size:12px}
-.inv-items input{width:100%;min-width:60px;padding:10px;background:#101010;color:#eee;border:1px solid #333}
-.inv-items .desc{min-width:180px}
-.inv-items .amount{white-space:nowrap}
-.inv-totals{margin:20px 0 20px auto;max-width:320px}
-.inv-total-row{display:flex;justify-content:space-between;padding:8px 0;color:#aaa;font-size:12px}
-.inv-total-row.final{border-top:1px solid #555;padding-top:15px;color:#fff;font-size:18px}
-.inv-statusline{color:#aaa;min-height:20px;font-size:12px;margin-top:14px;white-space:pre-wrap}
-.inv-subhead{font-size:12px;letter-spacing:.1em;margin-top:36px;border-bottom:1px solid #292929;padding-bottom:12px}
-.inv-client-box{border:1px solid #292929;padding:18px;margin:18px 0}
-.inv-hidden{display:none!important}
-.inv-empty{padding:30px 0;color:#777;font-size:13px}
-.inv-paper{background:#fff;color:#111;padding:36px;max-width:900px;margin:20px auto;font-family:Arial,sans-serif}
-.inv-paper h2{font-weight:400;font-size:32px;letter-spacing:-1px;margin:0}
-.inv-paper .paper-muted{color:#666;font-size:12px;line-height:1.6}
-.inv-paper .paper-head{display:flex;justify-content:space-between;gap:30px;border-bottom:1px solid #ddd;padding-bottom:24px}
-.inv-paper .paper-meta{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin:28px 0}
-.inv-paper table{width:100%;border-collapse:collapse;margin-top:20px}
-.inv-paper th,.inv-paper td{padding:12px 6px;border-bottom:1px solid #ddd;text-align:left;font-size:12px}
-.inv-paper th{font-size:10px;color:#555}
-.inv-paper .paper-totals{width:280px;margin:20px 0 20px auto}
-.inv-paper .paper-total{display:flex;justify-content:space-between;padding:7px 0;font-size:13px}
-.inv-paper .paper-grand{border-top:1px solid #111;padding-top:13px;font-size:18px}
-.inv-paper .paper-foot{border-top:1px solid #ddd;padding-top:20px;margin-top:40px;font-size:11px;color:#555;line-height:1.7}
-@media(max-width:800px){.inv-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.inv-paper{padding:18px}.inv-paper .paper-head,.inv-paper .paper-meta{display:block}.inv-paper .paper-meta>div{margin:18px 0}}
-@media(max-width:520px){.inv-grid,.inv-summary{grid-template-columns:1fr}.inv-summary>div{min-height:80px}.inv-summary strong{margin-top:12px}}
-@media print{
- body{background:#fff!important;color:#111!important}
- .top,.sidebar,.inv-tabs,.content>.eyebrow,.content>h1,.content>.intro,.inv-toolbar,.inv-summary,.inv-panel:not(#print-panel),.no-print{display:none!important}
- .layout{display:block!important;min-height:0!important}
- .content{padding:0!important;max-width:none!important}
- .inv-paper{display:block!important;max-width:none;margin:0;padding:10mm;box-shadow:none}
- .inv-paper *{color:#111!important}
-}
-</style>
-</head>
-<body>
-<header class="top">
- <div class="logo">MUBIKISHORE</div>
- <div class="top-right">
-  <div class="admin-label">ADMIN / INVOICES</div>
-  <button class="logout" id="logout">SIGN OUT</button>
- </div>
-</header>
-
-<div class="layout">
-<aside class="sidebar">
- <div class="section-label">CONTENT</div>
- <button class="nav-button" onclick="location.href='/admin/dashboard.html'">Dashboard</button>
- <button class="nav-button" onclick="location.href='/admin/projects.html'">Projects</button>
- <button class="nav-button" onclick="location.href='/admin/project-edit.html'">Add Project</button>
- <div class="section-label">STORE</div>
- <button class="nav-button" onclick="location.href='/admin/store.html'">Products</button>
- <div class="section-label">OTHER</div>
- <button class="nav-button" onclick="location.href='/admin/other.html'">Other Content</button>
- <div class="section-label">BUSINESS</div>
- <button class="nav-button">Invoices</button>
- <div class="section-label">SYSTEM</div>
- <button class="nav-button" onclick="location.href='/admin/settings.html'">Settings</button>
-</aside>
-
-<main class="content">
- <div class="eyebrow">ADMIN / BUSINESS</div>
- <h1 style="font-size:clamp(42px,6vw,72px)">INVOICES.</h1>
- <p class="intro">Create invoices, manage clients, record payments and print clean invoices as PDFs. All amounts are in INR.</p>
-
- <div class="inv-summary">
-  <div><small>INVOICED TOTAL</small><strong id="sum-total">₹0</strong></div>
-  <div><small>OUTSTANDING</small><strong id="sum-outstanding">₹0</strong></div>
-  <div><small>PAID</small><strong id="sum-paid">₹0</strong></div>
-  <div><small>OVERDUE</small><strong id="sum-overdue">₹0</strong></div>
- </div>
-
- <div class="inv-tabs no-print">
-  <button class="active" data-tab="list-panel">INVOICE HISTORY</button>
-  <button data-tab="invoice-form-panel">+ NEW INVOICE</button>
-  <button data-tab="clients-panel">CLIENTS</button>
-  <button data-tab="settings-panel">BUSINESS DETAILS</button>
- </div>
-
- <section id="list-panel" class="inv-panel active">
-  <div class="inv-toolbar">
-   <input id="search" placeholder="Search invoices or clients">
-   <select id="status-filter">
-    <option value="">All statuses</option>
-    <option value="draft">Draft</option>
-    <option value="sent">Sent</option>
-    <option value="paid">Paid</option>
-    <option value="partially_paid">Partially paid</option>
-    <option value="overdue">Overdue</option>
-   </select>
-   <button class="inv-btn primary" id="create-invoice">CREATE INVOICE</button>
-  </div>
-  <div id="invoice-list" class="inv-table-wrap"><div class="inv-empty">Loading invoices…</div></div>
-  <div id="main-status" class="inv-statusline" role="status"></div>
- </section>
-
- <section id="invoice-form-panel" class="inv-panel">
-  <div class="inv-toolbar">
-   <h2 id="form-title" style="font-size:28px;font-weight:400">Create invoice</h2>
-   <button class="inv-btn" id="cancel-edit">BACK TO HISTORY</button>
-  </div>
-  <form id="invoice-form" class="inv-form">
-   <input type="hidden" id="invoice-id">
-   <div class="inv-grid">
-    <div><label for="invoice-number">INVOICE NUMBER</label><input id="invoice-number" readonly placeholder="Assigned on save"></div>
-    <div><label for="client-select">CLIENT</label><select id="client-select" required><option value="">Choose a client</option></select></div>
-    <div><label for="invoice-date">INVOICE DATE</label><input id="invoice-date" type="date" required></div>
-    <div><label for="due-date">DUE DATE</label><input id="due-date" type="date" required></div>
-   </div>
-
-   <div class="inv-subhead">LINE ITEMS</div>
-   <div style="overflow-x:auto">
-    <table class="inv-items">
-     <thead><tr><th>Description</th><th>Qty</th><th>Rate (₹)</th><th>Amount</th><th></th></tr></thead>
-     <tbody id="item-rows"></tbody>
-    </table>
-   </div>
-   <button type="button" class="inv-btn" id="add-item">+ ADD LINE ITEM</button>
-
-   <div class="inv-grid" style="margin-top:24px">
-    <div><label for="tax-percent">TAX (%)</label><input type="number" id="tax-percent" min="0" max="100" step="0.001" value="0"></div>
-    <div><label for="invoice-notes">NOTES</label><textarea id="invoice-notes" placeholder="Optional notes"></textarea></div>
-   </div>
-
-   <label for="invoice-terms">PAYMENT TERMS</label>
-   <textarea id="invoice-terms">Payment due within 7 days.</textarea>
-
-   <div class="inv-totals">
-    <div class="inv-total-row"><span>Subtotal</span><strong id="form-subtotal">₹0.00</strong></div>
-    <div class="inv-total-row"><span>Tax</span><strong id="form-tax">₹0.00</strong></div>
-    <div class="inv-total-row final"><span>Total</span><strong id="form-total">₹0.00</strong></div>
-   </div>
-
-   <div class="inv-actions">
-    <button type="submit" class="inv-btn primary">SAVE INVOICE</button>
-    <button type="button" class="inv-btn" id="save-sent">SAVE AS SENT</button>
-   </div>
-   <div id="form-status" class="inv-statusline"></div>
-  </form>
- </section>
-
- <section id="clients-panel" class="inv-panel">
-  <h2>Clients</h2>
-  <form id="client-form" class="client-form">
-   <input type="hidden" id="client-id">
-   <div class="inv-grid">
-    <div><label for="client-name">CLIENT / BUSINESS NAME *</label><input id="client-name" required></div>
-    <div><label for="client-email">EMAIL</label><input id="client-email" type="email"></div>
-    <div><label for="client-phone">PHONE</label><input id="client-phone"></div>
-    <div><label for="client-gstin">GSTIN</label><input id="client-gstin"></div>
-    <div><label for="client-pan">PAN</label><input id="client-pan"></div>
-   </div>
-   <label for="client-address">BILLING ADDRESS</label><textarea id="client-address"></textarea>
-   <div class="inv-actions" style="margin-top:18px">
-    <button class="inv-btn primary" type="submit">SAVE CLIENT</button>
-    <button class="inv-btn" type="button" id="reset-client">CLEAR</button>
-   </div>
-  </form>
-  <div class="inv-table-wrap" style="margin-top:30px">
-   <table class="inv-table">
-    <thead><tr><th>CLIENT</th><th>EMAIL</th><th>PHONE</th><th>ACTIONS</th></tr></thead>
-    <tbody id="client-rows"></tbody>
-   </table>
-  </div>
- </section>
-
- <section id="settings-panel" class="inv-panel">
-  <h2>Business details</h2>
-  <p class="intro">These details are saved for future invoices.</p>
-  <form id="settings-form" class="inv-settings">
-   <div class="inv-grid">
-    <div><label for="business-name">BUSINESS NAME</label><input id="business-name" required></div>
-    <div><label for="business-email">BUSINESS EMAIL</label><input id="business-email" type="email"></div>
-    <div><label for="business-phone">PHONE</label><input id="business-phone"></div>
-    <div><label for="business-gstin">GSTIN</label><input id="business-gstin"></div>
-    <div><label for="business-pan">PAN</label><input id="business-pan"></div>
-    <div><label for="business-prefix">INVOICE PREFIX</label><input id="business-prefix" value="MUBI" required></div>
-   </div>
-   <label for="business-address">BUSINESS ADDRESS</label><textarea id="business-address"></textarea>
-   <div class="inv-subhead">PAYMENT DETAILS</div>
-   <div class="inv-grid">
-    <div><label for="business-upi">UPI ID</label><input id="business-upi"></div>
-    <div><label for="bank-name">BANK NAME</label><input id="bank-name"></div>
-    <div><label for="bank-account-name">ACCOUNT HOLDER NAME</label><input id="bank-account-name"></div>
-    <div><label for="bank-account-number">ACCOUNT NUMBER</label><input id="bank-account-number"></div>
-    <div><label for="bank-ifsc">IFSC</label><input id="bank-ifsc"></div>
-    <div><label for="bank-branch">BRANCH</label><input id="bank-branch"></div>
-    <div><label for="default-tax">DEFAULT TAX (%)</label><input type="number" id="default-tax" min="0" max="100" step="0.001"></div>
-   </div>
-   <label for="default-terms">DEFAULT PAYMENT TERMS</label><textarea id="default-terms">Payment due within 7 days.</textarea>
-   <button type="submit" class="inv-btn primary" style="margin-top:20px">SAVE BUSINESS DETAILS</button>
-  </form>
- </section>
-
- <section id="print-panel" class="inv-panel">
-  <div class="inv-toolbar no-print">
-   <button class="inv-btn" id="back-to-list">← BACK</button>
-   <div class="inv-actions">
-    <button class="inv-btn" id="record-payment">RECORD PAYMENT</button>
-    <button class="inv-btn primary" id="print-invoice">PRINT / SAVE PDF</button>
-   </div>
-  </div>
-  <div id="payment-box" class="inv-client-box inv-hidden no-print">
-   <h3>Record payment</h3>
-   <form id="payment-form">
-    <div class="inv-grid">
-     <div><label for="payment-amount">AMOUNT (₹)</label><input id="payment-amount" type="number" min="0.01" step="0.01" required></div>
-     <div><label for="payment-date">PAYMENT DATE</label><input id="payment-date" type="date" required></div>
-     <div><label for="payment-method">METHOD</label><select id="payment-method"><option>UPI</option><option>Bank transfer</option><option>Cash</option><option>Other</option></select></div>
-     <div><label for="payment-reference">REFERENCE / TRANSACTION ID</label><input id="payment-reference"></div>
-    </div>
-    <label for="payment-notes">NOTES</label><textarea id="payment-notes"></textarea>
-    <button class="inv-btn primary" type="submit">SAVE PAYMENT</button>
-   </form>
-  </div>
-  <div id="invoice-paper"></div>
- </section>
-</main>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/admin/config.js"></script>
-<script src="/admin/app.js"></script>
 <script>
-(function(){
-"use strict";
-const db=window.MUBI_SUPABASE;
-const $=id=>document.getElementById(id);
-const money=n=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR"}).format(Number(n)||0);
-const today=()=>new Date().toLocaleDateString("en-CA",{timeZone:"Asia/Kolkata"});
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let clients=[],invoices=[],settings={},currentInvoice=null;
-function say(s){$("main-status").textContent=s||""}
-function goTab(id){
- document.querySelectorAll(".inv-panel").forEach(p=>p.classList.toggle("active",p.id===id));
- document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));
- say("");
-}
-document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>goTab(b.dataset.tab)));
-$("create-invoice").onclick=()=>newInvoice();
-$("cancel-edit").onclick=()=>goTab("list-panel");
-$("back-to-list").onclick=()=>goTab("list-panel");
-$("add-item").onclick=()=>addItem();
-$("reset-client").onclick=()=>{$("client-form").reset();$("client-id").value="";};
-$("record-payment").onclick=()=>{$("payment-box").classList.toggle("inv-hidden");$("payment-date").value=today()};
-$("print-invoice").onclick=()=>window.print();
-$("save-sent").onclick=()=>{$("invoice-status-hidden").value="sent";$("invoice-form").requestSubmit()};
-function addItem(item={}){
- const tr=document.createElement("tr");
- tr.innerHTML=`<td><input class="desc" aria-label="Description" required value="${esc(item.description||"")}"></td>
- <td><input class="qty" aria-label="Quantity" type="number" min="0.001" step="0.001" value="${Number(item.quantity??1)}"></td>
- <td><input class="rate" aria-label="Rate" type="number" min="0" step="0.01" value="${Number(item.rate??0)}"></td>
- <td class="amount">${money(item.amount||0)}</td>
- <td><button type="button" class="inv-btn danger remove-item">×</button></td>`;
- tr.querySelectorAll("input").forEach(i=>i.addEventListener("input",calculate));
- tr.querySelector(".remove-item").onclick=()=>{tr.remove();calculate()};
- $("item-rows").appendChild(tr);calculate();
-}
-function itemData(){
- return [...$("item-rows").rows].map((r,i)=>{
-  const quantity=Number(r.querySelector(".qty").value)||0;
-  const rate=Number(r.querySelector(".rate").value)||0;
-  return {description:r.querySelector(".desc").value.trim(),quantity,rate,amount:Math.round(quantity*rate*100)/100,sort_order:i};
- }).filter(x=>x.description&&x.quantity>0);
-}
-function calculate(){
- let subtotal=0;
- [...$("item-rows").rows].forEach(r=>{
-  const q=Number(r.querySelector(".qty").value)||0,rate=Number(r.querySelector(".rate").value)||0;
-  const amount=Math.round(q*rate*100)/100;subtotal+=amount;r.querySelector(".amount").textContent=money(amount);
- });
- const taxPercent=Math.min(100,Math.max(0,Number($("tax-percent").value)||0));
- const tax=Math.round(subtotal*taxPercent)/100;
- $("form-subtotal").textContent=money(subtotal);
- $("form-tax").textContent=money(tax);
- $("form-total").textContent=money(subtotal+tax);
- return {subtotal:Math.round(subtotal*100)/100,tax:Math.round(tax*100)/100,total:Math.round((subtotal+tax)*100)/100};
-}
-$("tax-percent").addEventListener("input",calculate);
+(function () {
+  "use strict";
 
-async function loadSettings(){
- const {data,error}=await db.from("invoice_settings").select("*").eq("id",1).maybeSingle();
- if(error)throw error;settings=data||{};
- const map={"business-name":"business_name","business-address":"business_address","business-email":"business_email","business-phone":"business_phone","business-gstin":"business_gstin","business-pan":"business_pan","business-upi":"upi_id","bank-name":"bank_name","bank-account-name":"bank_account_name","bank-account-number":"bank_account_number","bank-ifsc":"bank_ifsc","bank-branch":"bank_branch","business-prefix":"invoice_prefix","default-terms":"default_terms","default-tax":"default_tax_percent"};
- Object.entries(map).forEach(([id,key])=>$(id).value=settings[key]??"");
-}
-async function loadClients(){
- const {data,error}=await db.from("invoice_clients").select("*").order("name");if(error)throw error;clients=data||[];
- $("client-rows").innerHTML=clients.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.email)}</td><td>${esc(c.phone)}</td><td><div class="inv-actions"><button class="inv-btn edit-client" data-id="${c.id}">EDIT</button><button class="inv-btn danger delete-client" data-id="${c.id}">DELETE</button></div></td></tr>`).join("")||'<tr><td colspan="4" class="muted">No clients yet.</td></tr>';
- $("client-select").innerHTML='<option value="">Choose a client</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
-}
-async function loadInvoices(){
- const {data,error}=await db.from("invoices").select("*").order("created_at",{ascending:false});if(error)throw error;invoices=data||[];
- invoices=invoices.map(i=>({...i,status:i.status!=="draft"&&i.status!=="paid"&&Number(i.amount_paid)<Number(i.total)&&i.due_date<today()?"overdue":i.status}));
- renderInvoices();renderSummary();
-}
-function clientName(inv){return inv.client_snapshot?.name||clients.find(c=>c.id===inv.client_id)?.name||"—"}
-function renderInvoices(){
- const query=$("search").value.toLowerCase().trim(),status=$("status-filter").value;
- const rows=invoices.filter(i=>(!status||i.status===status)&&(!query||(i.invoice_number+" "+clientName(i)).toLowerCase().includes(query)));
- $("invoice-list").innerHTML=rows.length?`<table class="inv-table"><thead><tr><th>INVOICE</th><th>CLIENT</th><th>DATE</th><th>TOTAL</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>${rows.map(i=>`<tr><td><strong>${esc(i.invoice_number)}</strong></td><td>${esc(clientName(i))}</td><td>${esc(i.invoice_date)}</td><td>${money(i.total)}</td><td><span class="inv-status">${esc(i.status.replace("_"," "))}</span></td><td><div class="inv-actions"><button class="inv-btn open-invoice" data-id="${i.id}">OPEN</button><button class="inv-btn edit-invoice" data-id="${i.id}">EDIT</button></div></td></tr>`).join("")}</tbody></table>`:'<div class="inv-empty">No invoices found.</div>';
-}
-function renderSummary(){
- const total=invoices.reduce((s,i)=>s+Number(i.total),0),paid=invoices.reduce((s,i)=>s+Number(i.amount_paid),0);
- const outstanding=invoices.filter(i=>i.status!=="draft").reduce((s,i)=>s+Math.max(0,Number(i.total)-Number(i.amount_paid)),0);
- const overdue=invoices.filter(i=>i.status==="overdue").reduce((s,i)=>s+Math.max(0,Number(i.total)-Number(i.amount_paid)),0);
- $("sum-total").textContent=money(total);$("sum-paid").textContent=money(paid);$("sum-outstanding").textContent=money(outstanding);$("sum-overdue").textContent=money(overdue);
-}
-$("search").oninput=renderInvoices;$("status-filter").onchange=renderInvoices;
-function newInvoice(){
- $("invoice-form").reset();$("invoice-id").value="";$("invoice-number").value="";$("form-title").textContent="Create invoice";
- $("invoice-date").value=today();const d=new Date(today()+"T12:00:00");d.setDate(d.getDate()+7);$("due-date").value=d.toLocaleDateString("en-CA");
- $("invoice-terms").value=settings.default_terms||"Payment due within 7 days.";
- $("tax-percent").value=settings.default_tax_percent||0;$("item-rows").innerHTML="";addItem();goTab("invoice-form-panel");
-}
-function editInvoice(id){
- const inv=invoices.find(i=>i.id===id);if(!inv)return;
- $("invoice-form").reset();$("invoice-id").value=inv.id;$("invoice-number").value=inv.invoice_number;$("form-title").textContent="Edit "+inv.invoice_number;
- $("client-select").value=inv.client_id||"";$("invoice-date").value=inv.invoice_date;$("due-date").value=inv.due_date;
- $("tax-percent").value=inv.tax_percent;$("invoice-notes").value=inv.notes||"";$("invoice-terms").value=inv.terms||"";
- $("item-rows").innerHTML="";
- db.from("invoice_items").select("*").eq("invoice_id",id).order("sort_order").then(({data,error})=>{if(error){say(error.message);return}(data||[]).forEach(addItem);if(!data?.length)addItem()});
- goTab("invoice-form-panel");
-}
-async function openInvoice(id){
- const inv=invoices.find(i=>i.id===id);if(!inv)return;
- const {data:items,error}=await db.from("invoice_items").select("*").eq("invoice_id",id).order("sort_order");if(error)throw error;
- currentInvoice=inv;const b=inv.business_snapshot||{},c=inv.client_snapshot||{};
- const pay=[];if(b.upi_id)pay.push("UPI: "+esc(b.upi_id));if(b.bank_name)pay.push("Bank: "+esc(b.bank_name));if(b.bank_account_name)pay.push("Account name: "+esc(b.bank_account_name));if(b.bank_account_number)pay.push("Account number: "+esc(b.bank_account_number));if(b.bank_ifsc)pay.push("IFSC: "+esc(b.bank_ifsc));if(b.bank_branch)pay.push("Branch: "+esc(b.bank_branch));
- const rows=(items||[]).map(it=>`<tr><td>${esc(it.description)}</td><td>${Number(it.quantity)}</td><td>${money(it.rate)}</td><td>${money(it.amount)}</td></tr>`).join("");
- $("invoice-paper").innerHTML=`<div class="paper-head"><div><h2>${esc(b.business_name||"MUBIKISHORE")}</h2><div class="paper-muted">${esc(b.business_address||"").replace(/\n/g,"<br>")}<br>${esc(b.business_email||"")} ${esc(b.business_phone||"")}<br>${b.business_gstin?"GSTIN: "+esc(b.business_gstin):""}</div></div><div style="text-align:right"><h2>INVOICE</h2><div class="paper-muted">${esc(inv.invoice_number)}<br>Date: ${esc(inv.invoice_date)}<br>Due: ${esc(inv.due_date)}<br>Status: ${esc(inv.status.replace("_"," "))}</div></div></div>
- <div class="paper-meta"><div><strong>BILL TO</strong><div class="paper-muted">${esc(c.name||"")}<br>${esc(c.billing_address||"").replace(/\n/g,"<br>")}<br>${esc(c.email||"")}<br>${c.gstin?"GSTIN: "+esc(c.gstin):""}</div></div><div><strong>PAYMENT DETAILS</strong><div class="paper-muted">${pay.join("<br>")||"Payment details not provided."}</div></div></div>
- <table><thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>
- <div class="paper-totals"><div class="paper-total"><span>Subtotal</span><span>${money(inv.subtotal)}</span></div><div class="paper-total"><span>Tax (${Number(inv.tax_percent)}%)</span><span>${money(inv.tax_amount)}</span></div><div class="paper-total paper-grand"><strong>Total</strong><strong>${money(inv.total)}</strong></div><div class="paper-total"><span>Paid</span><span>${money(inv.amount_paid)}</span></div><div class="paper-total"><strong>Balance due</strong><strong>${money(Math.max(0,Number(inv.total)-Number(inv.amount_paid)))}</strong></div></div>
- <div class="paper-foot">${inv.notes?esc(inv.notes).replace(/\n/g,"<br>")+"<br><br>":""}<strong>Terms</strong><br>${esc(inv.terms||"").replace(/\n/g,"<br>")}<br><br>Thank you.</div>`;
- $("payment-box").classList.add("inv-hidden");goTab("print-panel");
-}
-document.addEventListener("click",async e=>{
- const edit=e.target.closest(".edit-client"),del=e.target.closest(".delete-client"),open=e.target.closest(".open-invoice"),editInv=e.target.closest(".edit-invoice");
- try{
-  if(edit){const c=clients.find(x=>x.id===edit.dataset.id);if(!c)return;$("client-id").value=c.id;$("client-name").value=c.name;$("client-email").value=c.email;$("client-phone").value=c.phone;$("client-gstin").value=c.gstin;$("client-pan").value=c.pan;$("client-address").value=c.billing_address;goTab("clients-panel")}
-  if(del){if(!confirm("Delete this client?"))return;const {error}=await db.from("invoice_clients").delete().eq("id",del.dataset.id);if(error)throw error;await loadClients();say("Client deleted.")}
-  if(open)await openInvoice(open.dataset.id);
-  if(editInv)editInvoice(editInv.dataset.id);
- }catch(err){say(err.message||String(err))}
-});
-$("client-form").onsubmit=async e=>{
- e.preventDefault();say("Saving client…");
- try{
-  const id=$("client-id").value,obj={name:$("client-name").value.trim(),email:$("client-email").value.trim(),phone:$("client-phone").value.trim(),gstin:$("client-gstin").value.trim(),pan:$("client-pan").value.trim(),billing_address:$("client-address").value.trim(),updated_at:new Date().toISOString()};
-  const result=id?await db.from("invoice_clients").update(obj).eq("id",id):await db.from("invoice_clients").insert(obj);if(result.error)throw result.error;
-  $("client-form").reset();$("client-id").value="";await loadClients();say("Client saved.");
- }catch(err){say(err.message||String(err))}
-};
-$("settings-form").onsubmit=async e=>{
- e.preventDefault();say("Saving business details…");
- try{
-  const obj={id:1,business_name:$("business-name").value.trim(),business_address:$("business-address").value.trim(),business_email:$("business-email").value.trim(),business_phone:$("business-phone").value.trim(),business_gstin:$("business-gstin").value.trim(),business_pan:$("business-pan").value.trim(),upi_id:$("business-upi").value.trim(),bank_name:$("bank-name").value.trim(),bank_account_name:$("bank-account-name").value.trim(),bank_account_number:$("bank-account-number").value.trim(),bank_ifsc:$("bank-ifsc").value.trim(),bank_branch:$("bank-branch").value.trim(),invoice_prefix:$("business-prefix").value.trim()||"MUBI",default_terms:$("default-terms").value.trim(),default_tax_percent:Number($("default-tax").value)||0,updated_at:new Date().toISOString()};
-  const {error}=await db.from("invoice_settings").upsert(obj,{onConflict:"id"});if(error)throw error;settings=obj;say("Business details saved.");
- }catch(err){say(err.message||String(err))}
-};
-$("invoice-form").onsubmit=async e=>{
- e.preventDefault();say("Saving invoice…");
- try{
-  const client=clients.find(c=>c.id===$("client-select").value);if(!client)throw new Error("Choose a client first.");
-  const items=itemData();if(!items.length)throw new Error("Add at least one valid line item.");
-  const sums=calculate(),id=$("invoice-id").value;
-  const status=$("invoice-status-hidden").value||"draft";
-  const clientSnapshot={name:client.name,email:client.email,phone:client.phone,billing_address:client.billing_address,gstin:client.gstin,pan:client.pan};
-  const businessSnapshot={business_name:settings.business_name,business_address:settings.business_address,business_email:settings.business_email,business_phone:settings.business_phone,business_gstin:settings.business_gstin,business_pan:settings.business_pan,upi_id:settings.upi_id,bank_name:settings.bank_name,bank_account_name:settings.bank_account_name,bank_account_number:settings.bank_account_number,bank_ifsc:settings.bank_ifsc,bank_branch:settings.bank_branch};
-  const invoice={invoice_date:$("invoice-date").value,due_date:$("due-date").value,client_id:client.id,client_snapshot:clientSnapshot,business_snapshot:businessSnapshot,currency:"INR",status,notes:$("invoice-notes").value.trim(),terms:$("invoice-terms").value.trim(),tax_percent:Number($("tax-percent").value)||0,subtotal:sums.subtotal,tax_amount:sums.tax,total:sums.total,updated_at:new Date().toISOString()};
-  let saved;
-  if(id){const {data,error}=await db.from("invoices").update(invoice).eq("id",id).select().single();if(error)throw error;saved=data;const {error:delError}=await db.from("invoice_items").delete().eq("invoice_id",id);if(delError)throw delError}
-  else{const {data:num,error:numError}=await db.rpc("next_mubi_invoice_number");if(numError)throw numError;invoice.invoice_number=num;const {data,error}=await db.from("invoices").insert(invoice).select().single();if(error)throw error;saved=data}
-  const {error:itemError}=await db.from("invoice_items").insert(items.map(it=>({...it,invoice_id:saved.id})));if(itemError)throw itemError;
-  await loadInvoices();say("Invoice saved: "+saved.invoice_number);await openInvoice(saved.id);
- }catch(err){say(err.message||String(err))}
-};
-$("payment-form").onsubmit=async e=>{
- e.preventDefault();if(!currentInvoice)return;
- const amount=Number($("payment-amount").value),remaining=Number(currentInvoice.total)-Number(currentInvoice.amount_paid);
- if(amount<=0||amount>remaining+0.001){say("Enter an amount up to the remaining balance of "+money(remaining));return}
- say("Saving payment…");
- try{
-  const payment={invoice_id:currentInvoice.id,amount,payment_date:$("payment-date").value,method:$("payment-method").value,reference:$("payment-reference").value.trim(),notes:$("payment-notes").value.trim()};
-  const {error}=await db.from("invoice_payments").insert(payment);if(error)throw error;
-  const paid=Math.round((Number(currentInvoice.amount_paid)+amount)*100)/100,status=paid>=Number(currentInvoice.total)?"paid":"partially_paid";
-  const {error:updateError}=await db.from("invoices").update({amount_paid:paid,status,updated_at:new Date().toISOString()}).eq("id",currentInvoice.id);if(updateError)throw updateError;
-  $("payment-form").reset();await loadInvoices();await openInvoice(currentInvoice.id);say("Payment recorded.");
- }catch(err){say(err.message||String(err))}
-};
-async function init(){
- if(!db){say("Supabase client not found. Check /admin/config.js.");return}
- try{
-  const {data:{session},error:authError}=await db.auth.getSession();if(authError)throw authError;
-  if(!session){location.href="/admin/login.html";return}
-  await loadSettings();await loadClients();await loadInvoices();
-  $("invoice-date").value=today();$("payment-date").value=today();
- }catch(err){say("Could not load invoice manager: "+(err.message||String(err))}
-}
-init();
+  const db = window.MUBI_SUPABASE;
+  const $ = id => document.getElementById(id);
+  const money = n => new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR"
+  }).format(Number(n) || 0);
+
+  const today = () => {
+    const d = new Date();
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(d);
+  };
+
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[c]);
+
+  let clients = [];
+  let invoices = [];
+  let settings = {};
+  let currentInvoice = null;
+
+  function say(message) {
+    const status = $("main-status");
+    if (status) status.textContent = message || "";
+  }
+
+  // FIX: reliable switching between invoice tabs
+  function goTab(id) {
+    const panel = document.getElementById(id);
+
+    if (!panel || !panel.classList.contains("inv-panel")) {
+      say("Could not find tab: " + id);
+      return;
+    }
+
+    document.querySelectorAll(".inv-panel").forEach(p => {
+      p.classList.toggle("active", p.id === id);
+    });
+
+    document.querySelectorAll("[data-tab]").forEach(button => {
+      button.classList.toggle("active", button.dataset.tab === id);
+    });
+
+    say("");
+  }
+
+  document.addEventListener("click", event => {
+    const button = event.target.closest("[data-tab]");
+    if (!button) return;
+
+    event.preventDefault();
+    goTab(button.dataset.tab);
+  });
+
+  $("create-invoice").onclick = () => newInvoice();
+  $("cancel-edit").onclick = () => goTab("list-panel");
+  $("back-to-list").onclick = () => goTab("list-panel");
+  $("add-item").onclick = () => addItem();
+
+  $("reset-client").onclick = () => {
+    $("client-form").reset();
+    $("client-id").value = "";
+  };
+
+  $("record-payment").onclick = () => {
+    $("payment-box").classList.toggle("inv-hidden");
+    $("payment-date").value = today();
+  };
+
+  $("print-invoice").onclick = () => window.print();
+
+  $("save-sent").onclick = () => {
+    $("invoice-status-hidden").value = "sent";
+    $("invoice-form").requestSubmit();
+  };
+
+  function addItem(item = {}) {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td><input class="desc" aria-label="Description" required value="${esc(item.description || "")}"></td>
+      <td><input class="qty" aria-label="Quantity" type="number" min="0.001" step="0.001" value="${Number(item.quantity ?? 1)}"></td>
+      <td><input class="rate" aria-label="Rate" type="number" min="0" step="0.01" value="${Number(item.rate ?? 0)}"></td>
+      <td class="amount">${money(item.amount || 0)}</td>
+      <td><button type="button" class="inv-btn danger remove-item">×</button></td>
+    `;
+
+    tr.querySelectorAll("input").forEach(input => {
+      input.addEventListener("input", calculate);
+    });
+
+    tr.querySelector(".remove-item").onclick = () => {
+      tr.remove();
+      calculate();
+    };
+
+    $("item-rows").appendChild(tr);
+    calculate();
+  }
+
+  function itemData() {
+    return [...$("item-rows").rows].map((row, index) => {
+      const quantity = Number(row.querySelector(".qty").value) || 0;
+      const rate = Number(row.querySelector(".rate").value) || 0;
+
+      return {
+        description: row.querySelector(".desc").value.trim(),
+        quantity,
+        rate,
+        amount: Math.round(quantity * rate * 100) / 100,
+        sort_order: index
+      };
+    }).filter(item => item.description && item.quantity > 0);
+  }
+
+  function calculate() {
+    let subtotal = 0;
+
+    [...$("item-rows").rows].forEach(row => {
+      const quantity = Number(row.querySelector(".qty").value) || 0;
+      const rate = Number(row.querySelector(".rate").value) || 0;
+      const amount = Math.round(quantity * rate * 100) / 100;
+
+      subtotal += amount;
+      row.querySelector(".amount").textContent = money(amount);
+    });
+
+    const taxPercent = Math.min(
+      100,
+      Math.max(0, Number($("tax-percent").value) || 0)
+    );
+
+    const tax = Math.round(subtotal * taxPercent) / 100;
+
+    $("form-subtotal").textContent = money(subtotal);
+    $("form-tax").textContent = money(tax);
+    $("form-total").textContent = money(subtotal + tax);
+
+    return {
+      subtotal: Math.round(subtotal * 100) / 100,
+      tax: Math.round(tax * 100) / 100,
+      total: Math.round((subtotal + tax) * 100) / 100
+    };
+  }
+
+  $("tax-percent").addEventListener("input", calculate);
+
+  async function loadSettings() {
+    const { data, error } = await db
+      .from("invoice_settings")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    settings = data || {};
+
+    const fields = {
+      "business-name": "business_name",
+      "business-address": "business_address",
+      "business-email": "business_email",
+      "business-phone": "business_phone",
+      "business-gstin": "business_gstin",
+      "business-pan": "business_pan",
+      "business-upi": "upi_id",
+      "bank-name": "bank_name",
+      "bank-account-name": "bank_account_name",
+      "bank-account-number": "bank_account_number",
+      "bank-ifsc": "bank_ifsc",
+      "bank-branch": "bank_branch",
+      "business-prefix": "invoice_prefix",
+      "default-terms": "default_terms",
+      "default-tax": "default_tax_percent"
+    };
+
+    Object.entries(fields).forEach(([id, key]) => {
+      $(id).value = settings[key] ?? "";
+    });
+  }
+
+  async function loadClients() {
+    const { data, error } = await db
+      .from("invoice_clients")
+      .select("*")
+      .order("name");
+
+    if (error) throw error;
+
+    clients = data || [];
+
+    $("client-rows").innerHTML = clients.map(client => `
+      <tr>
+        <td>${esc(client.name)}</td>
+        <td>${esc(client.email)}</td>
+        <td>${esc(client.phone)}</td>
+        <td>
+          <div class="inv-actions">
+            <button class="inv-btn edit-client" data-id="${client.id}">EDIT</button>
+            <button class="inv-btn danger delete-client" data-id="${client.id}">DELETE</button>
+          </div>
+        </td>
+      </tr>
+    `).join("") || `
+      <tr><td colspan="4" class="muted">No clients yet.</td></tr>
+    `;
+
+    $("client-select").innerHTML =
+      '<option value="">Choose a client</option>' +
+      clients.map(client =>
+        `<option value="${client.id}">${esc(client.name)}</option>`
+      ).join("");
+  }
+
+  async function loadInvoices() {
+    const { data, error } = await db
+      .from("invoices")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    invoices = (data || []).map(invoice => {
+      const unpaid = Number(invoice.amount_paid || 0) < Number(invoice.total || 0);
+
+      if (
+        invoice.status !== "draft" &&
+        invoice.status !== "paid" &&
+        unpaid &&
+        invoice.due_date < today()
+      ) {
+        return { ...invoice, status: "overdue" };
+      }
+
+      return invoice;
+    });
+
+    renderInvoices();
+    renderSummary();
+  }
+
+  function clientName(invoice) {
+    return invoice.client_snapshot?.name ||
+      clients.find(client => client.id === invoice.client_id)?.name ||
+      "—";
+  }
+
+  function renderInvoices() {
+    const query = $("search").value.toLowerCase().trim();
+    const status = $("status-filter").value;
+
+    const rows = invoices.filter(invoice =>
+      (!status || invoice.status === status) &&
+      (!query || (
+        (invoice.invoice_number + " " + clientName(invoice))
+          .toLowerCase().includes(query)
+      ))
+    );
+
+    $("invoice-list").innerHTML = rows.length ? `
+      <table class="inv-table">
+        <thead>
+          <tr>
+            <th>INVOICE</th><th>CLIENT</th><th>DATE</th>
+            <th>TOTAL</th><th>STATUS</th><th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(invoice => `
+            <tr>
+              <td><strong>${esc(invoice.invoice_number)}</strong></td>
+              <td>${esc(clientName(invoice))}</td>
+              <td>${esc(invoice.invoice_date)}</td>
+              <td>${money(invoice.total)}</td>
+              <td><span class="inv-status">${esc(invoice.status.replace("_", " "))}</span></td>
+              <td>
+                <div class="inv-actions">
+                  <button class="inv-btn open-invoice" data-id="${invoice.id}">OPEN</button>
+                  <button class="inv-btn edit-invoice" data-id="${invoice.id}">EDIT</button>
+                </div>
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    ` : '<div class="inv-empty">No invoices found.</div>';
+  }
+
+  function renderSummary() {
+    const total = invoices.reduce((sum, invoice) =>
+      sum + Number(invoice.total || 0), 0);
+
+    const paid = invoices.reduce((sum, invoice) =>
+      sum + Number(invoice.amount_paid || 0), 0);
+
+    const outstanding = invoices
+      .filter(invoice => invoice.status !== "draft")
+      .reduce((sum, invoice) =>
+        sum + Math.max(0, Number(invoice.total) - Number(invoice.amount_paid || 0)), 0);
+
+    const overdue = invoices
+      .filter(invoice => invoice.status === "overdue")
+      .reduce((sum, invoice) =>
+        sum + Math.max(0, Number(invoice.total) - Number(invoice.amount_paid || 0)), 0);
+
+    $("sum-total").textContent = money(total);
+    $("sum-paid").textContent = money(paid);
+    $("sum-outstanding").textContent = money(outstanding);
+    $("sum-overdue").textContent = money(overdue);
+  }
+
+  $("search").oninput = renderInvoices;
+  $("status-filter").onchange = renderInvoices;
+
+  function newInvoice() {
+    $("invoice-form").reset();
+    $("invoice-id").value = "";
+    $("invoice-number").value = "";
+    $("invoice-status-hidden").value = "draft";
+    $("form-title").textContent = "Create invoice";
+
+    $("invoice-date").value = today();
+
+    const due = new Date(today() + "T12:00:00");
+    due.setDate(due.getDate() + 7);
+    $("due-date").value = due.toLocaleDateString("en-CA");
+
+    $("invoice-terms").value =
+      settings.default_terms || "Payment due within 7 days.";
+
+    $("tax-percent").value = settings.default_tax_percent || 0;
+    $("item-rows").innerHTML = "";
+    addItem();
+    goTab("invoice-form-panel");
+  }
+
+  function editInvoice(id) {
+    const invoice = invoices.find(item => item.id === id);
+    if (!invoice) return;
+
+    $("invoice-form").reset();
+    $("invoice-id").value = invoice.id;
+    $("invoice-number").value = invoice.invoice_number;
+    $("invoice-status-hidden").value = invoice.status || "draft";
+    $("form-title").textContent = "Edit " + invoice.invoice_number;
+
+    $("client-select").value = invoice.client_id || "";
+    $("invoice-date").value = invoice.invoice_date;
+    $("due-date").value = invoice.due_date;
+    $("tax-percent").value = invoice.tax_percent || 0;
+    $("invoice-notes").value = invoice.notes || "";
+    $("invoice-terms").value = invoice.terms || "";
+    $("item-rows").innerHTML = "";
+
+    db.from("invoice_items")
+      .select("*")
+      .eq("invoice_id", id)
+      .order("sort_order")
+      .then(({ data, error }) => {
+        if (error) {
+          say(error.message);
+          return;
+        }
+
+        (data || []).forEach(addItem);
+        if (!data?.length) addItem();
+      });
+
+    goTab("invoice-form-panel");
+  }
+
+  async function openInvoice(id) {
+    const invoice = invoices.find(item => item.id === id);
+    if (!invoice) return;
+
+    const { data: items, error } = await db
+      .from("invoice_items")
+      .select("*")
+      .eq("invoice_id", id)
+      .order("sort_order");
+
+    if (error) throw error;
+
+    currentInvoice = invoice;
+
+    const business = invoice.business_snapshot || {};
+    const client = invoice.client_snapshot || {};
+    const paymentDetails = [];
+
+    if (business.upi_id) paymentDetails.push("UPI: " + esc(business.upi_id));
+    if (business.bank_name) paymentDetails.push("Bank: " + esc(business.bank_name));
+    if (business.bank_account_name) paymentDetails.push("Account name: " + esc(business.bank_account_name));
+    if (business.bank_account_number) paymentDetails.push("Account number: " + esc(business.bank_account_number));
+    if (business.bank_ifsc) paymentDetails.push("IFSC: " + esc(business.bank_ifsc));
+    if (business.bank_branch) paymentDetails.push("Branch: " + esc(business.bank_branch));
+
+    const rows = (items || []).map(item => `
+      <tr>
+        <td>${esc(item.description)}</td>
+        <td>${Number(item.quantity)}</td>
+        <td>${money(item.rate)}</td>
+        <td>${money(item.amount)}</td>
+      </tr>
+    `).join("");
+
+    $("invoice-paper").innerHTML = `
+      <div class="inv-paper">
+        <div class="paper-head">
+          <div>
+            <h2>${esc(business.business_name || "MUBIKISHORE")}</h2>
+            <div class="paper-muted">
+              ${esc(business.business_address || "").replace(/\n/g, "<br>")}<br>
+              ${esc(business.business_email || "")} ${esc(business.business_phone || "")}<br>
+              ${business.business_gstin ? "GSTIN: " + esc(business.business_gstin) : ""}
+            </div>
+          </div>
+          <div style="text-align:right">
+            <h2>INVOICE</h2>
+            <div class="paper-muted">
+              ${esc(invoice.invoice_number)}<br>
+              Date: ${esc(invoice.invoice_date)}<br>
+              Due: ${esc(invoice.due_date)}<br>
+              Status: ${esc(invoice.status.replace("_", " "))}
+            </div>
+          </div>
+        </div>
+
+        <div class="paper-meta">
+          <div>
+            <strong>BILL TO</strong>
+            <div class="paper-muted">
+              ${esc(client.name || "")}<br>
+              ${esc(client.billing_address || "").replace(/\n/g, "<br>")}<br>
+              ${esc(client.email || "")}<br>
+              ${client.gstin ? "GSTIN: " + esc(client.gstin) : ""}
+            </div>
+          </div>
+          <div>
+            <strong>PAYMENT DETAILS</strong>
+            <div class="paper-muted">
+              ${paymentDetails.join("<br>") || "Payment details not provided."}
+            </div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+
+        <div class="paper-totals">
+          <div class="paper-total"><span>Subtotal</span><span>${money(invoice.subtotal)}</span></div>
+          <div class="paper-total"><span>Tax (${Number(invoice.tax_percent)}%)</span><span>${money(invoice.tax_amount)}</span></div>
+          <div class="paper-total paper-grand"><strong>Total</strong><strong>${money(invoice.total)}</strong></div>
+          <div class="paper-total"><span>Paid</span><span>${money(invoice.amount_paid)}</span></div>
+          <div class="paper-total"><strong>Balance due</strong><strong>${money(Math.max(0, Number(invoice.total) - Number(invoice.amount_paid || 0)))}</strong></div>
+        </div>
+
+        <div class="paper-foot">
+          ${invoice.notes ? esc(invoice.notes).replace(/\n/g, "<br>") + "<br><br>" : ""}
+          <strong>Terms</strong><br>
+          ${esc(invoice.terms || "").replace(/\n/g, "<br>")}<br><br>
+          Thank you.
+        </div>
+      </div>
+    `;
+
+    $("payment-box").classList.add("inv-hidden");
+    goTab("print-panel");
+  }
+
+  document.addEventListener("click", async event => {
+    const editClient = event.target.closest(".edit-client");
+    const deleteClient = event.target.closest(".delete-client");
+    const open = event.target.closest(".open-invoice");
+    const editInv = event.target.closest(".edit-invoice");
+
+    try {
+      if (editClient) {
+        const client = clients.find(item => item.id === editClient.dataset.id);
+        if (!client) return;
+
+        $("client-id").value = client.id;
+        $("client-name").value = client.name || "";
+        $("client-email").value = client.email || "";
+        $("client-phone").value = client.phone || "";
+        $("client-gstin").value = client.gstin || "";
+        $("client-pan").value = client.pan || "";
+        $("client-address").value = client.billing_address || "";
+        goTab("clients-panel");
+      }
+
+      if (deleteClient) {
+        if (!confirm("Delete this client?")) return;
+
+        const { error } = await db
+          .from("invoice_clients")
+          .delete()
+          .eq("id", deleteClient.dataset.id);
+
+        if (error) throw error;
+
+        await loadClients();
+        say("Client deleted.");
+      }
+
+      if (open) await openInvoice(open.dataset.id);
+      if (editInv) editInvoice(editInv.dataset.id);
+    } catch (error) {
+      say(error.message || String(error));
+    }
+  });
+
+  $("client-form").onsubmit = async event => {
+    event.preventDefault();
+    say("Saving client…");
+
+    try {
+      const id = $("client-id").value;
+
+      const client = {
+        name: $("client-name").value.trim(),
+        email: $("client-email").value.trim(),
+        phone: $("client-phone").value.trim(),
+        gstin: $("client-gstin").value.trim(),
+        pan: $("client-pan").value.trim(),
+        billing_address: $("client-address").value.trim(),
+        updated_at: new Date().toISOString()
+      };
+
+      const result = id
+        ? await db.from("invoice_clients").update(client).eq("id", id)
+        : await db.from("invoice_clients").insert(client);
+
+      if (result.error) throw result.error;
+
+      $("client-form").reset();
+      $("client-id").value = "";
+      await loadClients();
+      say("Client saved.");
+    } catch (error) {
+      say(error.message || String(error));
+    }
+  };
+
+  $("settings-form").onsubmit = async event => {
+    event.preventDefault();
+    say("Saving business details…");
+
+    try {
+      const obj = {
+        id: 1,
+        business_name: $("business-name").value.trim(),
+        business_address: $("business-address").value.trim(),
+        business_email: $("business-email").value.trim(),
+        business_phone: $("business-phone").value.trim(),
+        business_gstin: $("business-gstin").value.trim(),
+        business_pan: $("business-pan").value.trim(),
+        upi_id: $("business-upi").value.trim(),
+        bank_name: $("bank-name").value.trim(),
+        bank_account_name: $("bank-account-name").value.trim(),
+        bank_account_number: $("bank-account-number").value.trim(),
+        bank_ifsc: $("bank-ifsc").value.trim(),
+        bank_branch: $("bank-branch").value.trim(),
+        invoice_prefix: $("business-prefix").value.trim() || "MUBI",
+        default_terms: $("default-terms").value.trim(),
+        default_tax_percent: Number($("default-tax").value) || 0,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await db
+        .from("invoice_settings")
+        .upsert(obj, { onConflict: "id" });
+
+      if (error) throw error;
+
+      settings = obj;
+      say("Business details saved.");
+    } catch (error) {
+      say(error.message || String(error));
+    }
+  };
+
+  $("invoice-form").onsubmit = async event => {
+    event.preventDefault();
+    say("Saving invoice…");
+
+    try {
+      const client = clients.find(item => item.id === $("client-select").value);
+      if (!client) throw new Error("Choose a client first.");
+
+      const items = itemData();
+      if (!items.length) throw new Error("Add at least one valid line item.");
+
+      const sums = calculate();
+      const id = $("invoice-id").value;
+      const status = $("invoice-status-hidden").value || "draft";
+
+      const clientSnapshot = {
+        name: client.name,
+        email: client.email,
+        phone: client.phone,
+        billing_address: client.billing_address,
+        gstin: client.gstin,
+        pan: client.pan
+      };
+
+      const businessSnapshot = {
+        business_name: settings.business_name,
+        business_address: settings.business_address,
+        business_email: settings.business_email,
+        business_phone: settings.business_phone,
+        business_gstin: settings.business_gstin,
+        business_pan: settings.business_pan,
+        upi_id: settings.upi_id,
+        bank_name: settings.bank_name,
+        bank_account_name: settings.bank_account_name,
+        bank_account_number: settings.bank_account_number,
+        bank_ifsc: settings.bank_ifsc,
+        bank_branch: settings.bank_branch
+      };
+
+      const invoice = {
+        invoice_date: $("invoice-date").value,
+        due_date: $("due-date").value,
+        client_id: client.id,
+        client_snapshot: clientSnapshot,
+        business_snapshot: businessSnapshot,
+        currency: "INR",
+        status,
+        notes: $("invoice-notes").value.trim(),
+        terms: $("invoice-terms").value.trim(),
+        tax_percent: Number($("tax-percent").value) || 0,
+        subtotal: sums.subtotal,
+        tax_amount: sums.tax,
+        total: sums.total,
+        updated_at: new Date().toISOString()
+      };
+
+      let saved;
+
+      if (id) {
+        const { data, error } = await db
+          .from("invoices")
+          .update(invoice)
+          .eq("id", id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        saved = data;
+
+        const { error: deleteError } = await db
+          .from("invoice_items")
+          .delete()
+          .eq("invoice_id", id);
+
+        if (deleteError) throw deleteError;
+      } else {
+        const { data: number, error: numberError } =
+          await db.rpc("next_mubi_invoice_number");
+
+        if (numberError) throw numberError;
+
+        invoice.invoice_number = number;
+
+        const { data, error } = await db
+          .from("invoices")
+          .insert(invoice)
+          .select()
+          .single();
+
+        if (error) throw error;
+        saved = data;
+      }
+
+      const { error: itemError } = await db
+        .from("invoice_items")
+        .insert(items.map(item => ({ ...item, invoice_id: saved.id })));
+
+      if (itemError) throw itemError;
+
+      await loadInvoices();
+      say("Invoice saved: " + saved.invoice_number);
+      await openInvoice(saved.id);
+    } catch (error) {
+      say(error.message || String(error));
+    }
+  };
+
+  $("payment-form").onsubmit = async event => {
+    event.preventDefault();
+    if (!currentInvoice) return;
+
+    const amount = Number($("payment-amount").value);
+    const remaining = Number(currentInvoice.total) - Number(currentInvoice.amount_paid || 0);
+
+    if (amount <= 0 || amount > remaining + 0.001) {
+      say("Enter an amount up to the remaining balance of " + money(remaining));
+      return;
+    }
+
+    say("Saving payment…");
+
+    try {
+      const payment = {
+        invoice_id: currentInvoice.id,
+        amount,
+        payment_date: $("payment-date").value,
+        method: $("payment-method").value,
+        reference: $("payment-reference").value.trim(),
+        notes: $("payment-notes").value.trim()
+      };
+
+      const { error } = await db.from("invoice_payments").insert(payment);
+      if (error) throw error;
+
+      const paid = Math.round((Number(currentInvoice.amount_paid || 0) + amount) * 100) / 100;
+      const status = paid >= Number(currentInvoice.total) ? "paid" : "partially_paid";
+
+      const { error: updateError } = await db
+        .from("invoices")
+        .update({
+          amount_paid: paid,
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", currentInvoice.id);
+
+      if (updateError) throw updateError;
+
+      const invoiceId = currentInvoice.id;
+      $("payment-form").reset();
+      await loadInvoices();
+      await openInvoice(invoiceId);
+      say("Payment recorded.");
+    } catch (error) {
+      say(error.message || String(error));
+    }
+  };
+
+  async function init() {
+    if (!db) {
+      say("Supabase client not found. Check /admin/config.js.");
+      return;
+    }
+
+    try {
+      const { data: { session }, error } = await db.auth.getSession();
+      if (error) throw error;
+
+      if (!session) {
+        location.href = "/admin/login.html";
+        return;
+      }
+
+      await loadSettings();
+      await loadClients();
+      await loadInvoices();
+
+      $("invoice-date").value = today();
+      $("payment-date").value = today();
+    } catch (error) {
+      // Corrected syntax here so the entire script can run.
+      say("Could not load invoice manager: " + (error.message || String(error)));
+    }
+  }
+
+  // Needed by SAVE AS SENT and invoice saving.
+  if (!$("invoice-status-hidden")) {
+    const hidden = document.createElement("input");
+    hidden.type = "hidden";
+    hidden.id = "invoice-status-hidden";
+    hidden.value = "draft";
+    $("invoice-form").prepend(hidden);
+  }
+
+  init();
 })();
 </script>
-</body>
-</html>
-```
