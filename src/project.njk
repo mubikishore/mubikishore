@@ -487,7 +487,48 @@ permalink: /project.html
       return;
     }
 
-    document.title = data.title + " — MUBIKISHORE";
+// PREVIOUS / NEXT PROJECT NAVIGATION
+try {
+  const { data: projects, error: projectsError } = await MUBI_SUPABASE
+    .from("projects")
+    .select("title, slug, date")
+    .eq("published", true)
+    .order("date", { ascending: false, nullsFirst: false });
+
+  if (projectsError) throw projectsError;
+
+  const currentIndex = projects.findIndex(
+    project => project.slug === slug
+  );
+
+  const navigation = document.getElementById("project-navigation");
+  const prevLink = document.getElementById("project-prev");
+  const nextLink = document.getElementById("project-next");
+
+  if (currentIndex !== -1 && projects.length > 1) {
+    const previous = projects[currentIndex - 1];
+    const next = projects[currentIndex + 1];
+
+    if (previous) {
+      prevLink.href = "/project.html?slug=" + encodeURIComponent(previous.slug);
+      prevLink.querySelector(".project-nav-title").textContent = previous.title;
+    } else {
+      prevLink.hidden = true;
+    }
+
+    if (next) {
+      nextLink.href = "/project.html?slug=" + encodeURIComponent(next.slug);
+      nextLink.querySelector(".project-nav-title").textContent = next.title;
+    } else {
+      nextLink.hidden = true;
+    }
+
+    navigation.hidden = false;
+  }
+} catch (error) {
+  console.error("Project navigation error:", error);
+}    
+document.title = data.title + " — MUBIKISHORE";
     title.textContent = data.title;
     meta.textContent = [data.date, data.role]
       .filter(Boolean)
