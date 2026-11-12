@@ -297,7 +297,6 @@ body.other-viewer-open {
   max-height: 62vh;
   object-fit: contain;
 }
-
 .other-print-caption {
   padding: 17px 8px 21px;
 }
@@ -477,8 +476,6 @@ body.other-viewer-open {
   color: #999999;
 }
 
-
-
 /* SELECTED WORKS — SUBTLE REVEAL */
 
 #work {
@@ -627,7 +624,6 @@ body.other-viewer-open {
     document.getElementById("project-count").textContent = "Projects unavailable";
     showSectionError("cms-projects", "Could not load projects.");
   }
-
   // STORE PRODUCTS
   try {
     const { data, error } = await db
@@ -780,7 +776,6 @@ body.other-viewer-open {
     showSectionError("cms-other", "Other content could not be loaded.");
   }
 
-  
   // HOMEPAGE HERO IMAGE COLLECTION
   try {
     const { data, error } = await db
