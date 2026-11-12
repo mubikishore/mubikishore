@@ -507,6 +507,149 @@ body.other-viewer-open {
   }
 }
 
+
+/* OTHER THINGS — A24-INSPIRED POLAROID LAYOUT */
+
+#other {
+  background: #F5F5F3;
+  color: #111111;
+  padding-bottom: 30px;
+}
+
+#other .head {
+  color: #111111;
+  border-bottom-color: #DDDDDD;
+}
+
+#other .head span:last-child {
+  color: #777777;
+}
+
+/* Horizontal photograph row */
+#cms-other {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 0 12px;
+  background: transparent;
+  scrollbar-width: thin;
+  scrollbar-color: #BBBBBB transparent;
+  scroll-snap-type: x proximity;
+}
+
+/* Individual Polaroid cards */
+#cms-other .other-tile {
+  position: relative;
+  flex: 0 0 clamp(260px, 30vw, 390px);
+  width: clamp(260px, 30vw, 390px);
+  height: auto;
+  aspect-ratio: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 10px 10px 22px;
+  border: 1px solid #DDDDDD;
+  background: #FFFFFF;
+  color: #111111;
+  overflow: hidden;
+  scroll-snap-align: start;
+  cursor: zoom-in;
+}
+
+/* Photograph */
+#cms-other .other-tile img {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  display: block;
+  transition: transform .45s ease;
+}
+
+/* Caption below photograph */
+#cms-other .other-tile-caption {
+  position: relative;
+  inset: auto;
+  display: block;
+  padding: 14px 5px 2px;
+  color: #111111;
+  background: none;
+}
+
+#cms-other .other-tile-title {
+  display: block;
+  color: #111111;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+#cms-other .other-tile-caption .meta {
+  display: block;
+  margin-top: 5px;
+  color: #888888;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* Reduce the space before About */
+#about {
+  padding-top: 55px;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  #cms-other {
+    gap: 16px;
+  }
+
+  #cms-other .other-tile {
+    flex-basis: 76vw;
+    width: 76vw;
+  }
+
+  #about {
+    padding-top: 45px;
+  }
+}
+/* OTHER THINGS — ALWAYS HORIZONTAL SCROLL */
+
+#cms-other {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: transparent;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+
+#cms-other .other-tile {
+  flex: 0 0 clamp(260px, 30vw, 390px) !important;
+  width: clamp(260px, 30vw, 390px) !important;
+  min-width: clamp(260px, 30vw, 390px);
+  scroll-snap-align: start;
+}
+
+@media (max-width: 700px) {
+  #cms-other {
+    gap: 16px;
+  }
+
+  #cms-other .other-tile {
+    flex-basis: 76vw !important;
+    width: 76vw !important;
+    min-width: 76vw;
+  }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/admin/config.js"></script>
