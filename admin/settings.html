@@ -3,25 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SETTINGS.</title>
+<title>SETTINGS — MUBIKISHORE</title>
 <link rel="stylesheet" href="/admin/styles.css">
+
 <style>
 .settings-form{max-width:850px;margin-top:32px}
 .settings-form label{display:block;margin:22px 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
 .settings-form input:not([type=checkbox]):not([type=file]),.settings-form textarea{width:100%;padding:14px;background:#171717;color:#f1f0ec;border:1px solid #444;border-radius:4px;font:14px Arial,sans-serif}
 .settings-form input[type=file]{display:block;width:100%;padding:14px;background:#171717;color:#eee;border:1px solid #444;border-radius:4px}
 .settings-form textarea{min-height:100px;resize:vertical}
-.settings-form .check{display:flex;align-items:center;gap:10px;text-transform:none}
-.settings-form .check input{width:auto}
 .save-settings,.upload-button{margin-top:16px;padding:14px 22px;cursor:pointer;background:#f1f0ec;color:#111;border:0;border-radius:3px;font-weight:bold}
 .upload-button{background:#292929;color:#fff;border:1px solid #555}
 .status{margin-top:16px;color:#aaa;line-height:1.6;overflow-wrap:anywhere}
 .settings-note{color:#999;font-size:12px;line-height:1.6}
-.preview{display:none;max-width:100%;max-height:320px;margin-top:14px;background:#111;border:1px solid #333}
-.preview.visible{display:block}
 .field-group{margin-bottom:22px}
+.hero-image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:18px}
+.hero-image-card{border:1px solid #444;padding:9px;min-width:0}
+.hero-image-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#222}
+.hero-image-card button{width:100%;margin-top:10px;padding:9px;background:#642d2d;color:white;border:0;cursor:pointer}
+.hero-image-card p{font-size:11px;color:#999;overflow-wrap:anywhere}
+.hero-empty{color:#888;font-size:13px;padding:18px 0}
 </style>
 </head>
+
 <body>
 <header class="top">
   <div class="logo">MUBIKISHORE</div>
@@ -37,10 +41,13 @@
   <button class="nav-button" data-nav="dashboard">Dashboard</button>
   <button class="nav-button" data-nav="projects">Projects</button>
   <button class="nav-button" data-nav="project-edit">Add Project</button>
+
   <div class="section-label">STORE</div>
   <button class="nav-button" data-nav="store">Products</button>
+
   <div class="section-label">OTHER</div>
   <button class="nav-button" data-nav="other">Other Content</button>
+
   <div class="section-label">SYSTEM</div>
   <button class="nav-button" data-nav="settings">Settings</button>
 </aside>
@@ -48,39 +55,36 @@
 <main class="content">
   <div class="eyebrow">ADMIN / CONFIGURATION</div>
   <h1>SETTINGS.</h1>
-  <p class="intro">Manage your homepage reel and site information.</p>
+  <p class="intro">Manage your homepage image collection and site information.</p>
 
   <form class="settings-form" id="settings-form">
-    <h2>HERO REEL</h2>
-    <p class="settings-note">Choose an MP4 video from your computer. It will upload to your existing public media bucket.</p>
+
+    <h2>HERO IMAGE COLLECTION</h2>
+    <p class="settings-note">
+      Upload multiple images for your homepage. One image will be randomly
+      selected every time a visitor refreshes the website.
+    </p>
 
     <div class="field-group">
-      <label for="video-file">Upload hero video (MP4)</label>
-      <input id="video-file" type="file" accept="video/mp4,video/webm,video/quicktime">
-      <button class="upload-button" id="upload-video" type="button">UPLOAD VIDEO</button>
-      <video id="video-preview" class="preview" controls playsinline></video>
-      <p class="settings-note" id="video-status"></p>
+      <label for="hero-files">ADD HERO IMAGES</label>
+      <input id="hero-files" type="file" accept="image/*" multiple>
+      <button class="upload-button" id="upload-images" type="button">
+        UPLOAD SELECTED IMAGES
+      </button>
+      <p class="settings-note">
+        Recommended: WebP images, ideally below 1 MB each.
+        Your existing images will remain until you remove them.
+      </p>
+      <p class="settings-note" id="upload-status"></p>
     </div>
 
-    <label for="hero_video">Hero video URL</label>
-    <input id="hero_video" type="url" placeholder="Upload a video above or paste a direct video URL">
-
-    <div class="field-group">
-      <label for="poster-file">Upload poster image</label>
-      <input id="poster-file" type="file" accept="image/*">
-      <button class="upload-button" id="upload-poster" type="button">UPLOAD POSTER</button>
-      <img id="poster-preview" class="preview" alt="Hero poster preview">
-      <p class="settings-note" id="poster-status"></p>
+    <label>YOUR HERO IMAGE COLLECTION</label>
+    <div id="hero-image-grid" class="hero-image-grid">
+      <p class="hero-empty">Loading images...</p>
     </div>
 
-    <label for="hero_poster">Poster image URL</label>
-    <input id="hero_poster" type="url" placeholder="Upload a poster above or paste an image URL">
+    <h2 style="margin-top:45px">SITE INFORMATION</h2>
 
-    <label class="check"><input id="hero_autoplay" type="checkbox"> Autoplay video</label>
-    <label class="check"><input id="hero_muted" type="checkbox"> Mute video</label>
-    <label class="check"><input id="hero_loop" type="checkbox"> Loop video</label>
-
-    <h2 style="margin-top:40px">SITE INFORMATION</h2>
     <label for="tagline">Tagline</label>
     <input id="tagline" type="text">
 
@@ -98,6 +102,7 @@
 
     <button class="save-settings" type="submit">SAVE SETTINGS</button>
     <p class="status" id="status" role="status"></p>
+
   </form>
 </main>
 </div>
@@ -105,124 +110,261 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/admin/config.js"></script>
 <script src="/admin/app.js"></script>
+
 <script>
 (async function(){
-  const db=window.MUBI_SUPABASE;
-  const form=document.getElementById("settings-form");
-  const status=document.getElementById("status");
-  const videoStatus=document.getElementById("video-status");
-  const posterStatus=document.getElementById("poster-status");
-  const bucket=(window.MUBI_CONFIG&&window.MUBI_CONFIG.MEDIA_BUCKET)||"media";
-  const fields=["hero_video","hero_poster","hero_autoplay","hero_muted","hero_loop","tagline","location","about","instagram","email"];
-  let settingsId=null;
+
+  const db = window.MUBI_SUPABASE;
+  const form = document.getElementById("settings-form");
+  const status = document.getElementById("status");
+  const uploadStatus = document.getElementById("upload-status");
+  const imageGrid = document.getElementById("hero-image-grid");
+
+  const bucket =
+    (window.MUBI_CONFIG && window.MUBI_CONFIG.MEDIA_BUCKET) || "media";
+
+  const fields = [
+    "tagline",
+    "location",
+    "about",
+    "instagram",
+    "email"
+  ];
+
+  let settingsId = null;
+  let heroImages = [];
 
   if(!db){
-    status.textContent="Database connection missing. Check /admin/config.js.";
+    status.textContent =
+      "Database connection missing. Check /admin/config.js.";
     return;
   }
 
-  function setPreview(id,url){
-    const el=document.getElementById(id);
-    if(!url){el.removeAttribute("src");el.classList.remove("visible");return;}
-    el.src=url;
-    el.classList.add("visible");
-  }
+  function renderImages(){
 
-  document.getElementById("hero_video").addEventListener("input",e=>{
-    setPreview("video-preview",e.target.value.trim());
-  });
-  document.getElementById("hero_poster").addEventListener("input",e=>{
-    setPreview("poster-preview",e.target.value.trim());
-  });
+    imageGrid.replaceChildren();
 
-  try{
-    const {data,error}=await db.from("site_settings").select("*").order("id",{ascending:true}).limit(1);
-    if(error)throw error;
-    if(!data||!data.length){
-      status.textContent="No settings row exists in site_settings. Ask for help before creating one.";
+    if(!heroImages.length){
+      const empty = document.createElement("p");
+      empty.className = "hero-empty";
+      empty.textContent = "No hero images uploaded yet.";
+      imageGrid.appendChild(empty);
       return;
     }
-    const row=data[0];
-    settingsId=row.id;
-    fields.forEach(key=>{
-      const el=document.getElementById(key);
-      if(el.type==="checkbox")el.checked=Boolean(row[key]);
-      else el.value=row[key]||"";
-    });
-    setPreview("video-preview",row.hero_video||"");
-    setPreview("poster-preview",row.hero_poster||"");
-  }catch(e){
-    console.error(e);
-    status.textContent="Could not load settings: "+e.message;
-    return;
-  }
 
-  async function uploadFile(inputId,folder,statusEl,urlField,previewId){
-    const input=document.getElementById(inputId);
-    const file=input.files&&input.files[0];
-    if(!file){statusEl.textContent="Choose a file first.";return;}
-    if(folder==="hero"&&!file.type.startsWith("video/")){
-      statusEl.textContent="Please choose a video file.";return;
-    }
-    if(folder==="poster"&&!file.type.startsWith("image/")){
-      statusEl.textContent="Please choose an image file.";return;
-    }
-    if(folder==="hero"&&file.size>50*1024*1024){
-      statusEl.textContent="Video exceeds the bucket's 50 MB limit. Compress it and try again.";return;
-    }
-    if(folder==="poster"&&file.size>10*1024*1024){
-      statusEl.textContent="Please use an image smaller than 10 MB.";return;
-    }
+    heroImages.forEach((url,index)=>{
 
-    const safeName=file.name.toLowerCase().replace(/[^a-z0-9._-]+/g,"-");
-    const path="site/"+folder+"-"+Date.now()+"-"+safeName;
-    statusEl.textContent="Uploading…";
+      const card = document.createElement("div");
+      card.className = "hero-image-card";
 
-    try{
-      const {error:uploadError}=await db.storage.from(bucket).upload(path,file,{
-        cacheControl:"3600",upsert:false,contentType:file.type
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "Hero image " + (index + 1);
+
+      const name = document.createElement("p");
+      name.textContent = "IMAGE " + String(index + 1).padStart(2,"0");
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "REMOVE IMAGE";
+
+      remove.addEventListener("click",()=>{
+
+        heroImages.splice(index,1);
+        renderImages();
+
+        uploadStatus.textContent =
+          "Image removed from collection. Click SAVE SETTINGS to confirm.";
+
       });
-      if(uploadError)throw uploadError;
 
-      const {data}=db.storage.from(bucket).getPublicUrl(path);
-      if(!data||!data.publicUrl)throw new Error("Could not create a public file URL.");
+      card.append(img,name,remove);
+      imageGrid.appendChild(card);
 
-      document.getElementById(urlField).value=data.publicUrl;
-      setPreview(previewId,data.publicUrl);
-      statusEl.textContent="Upload complete. Click SAVE SETTINGS to keep this URL.";
-    }catch(e){
-      console.error(e);
-      statusEl.textContent="Upload failed: "+e.message;
-    }
+    });
+
   }
 
-  document.getElementById("upload-video").addEventListener("click",()=>{
-    uploadFile("video-file","hero",videoStatus,"hero_video","video-preview");
-  });
-  document.getElementById("upload-poster").addEventListener("click",()=>{
-    uploadFile("poster-file","poster",posterStatus,"hero_poster","poster-preview");
-  });
+  try{
+
+    const {data,error} = await db
+      .from("site_settings")
+      .select("*")
+      .order("id",{ascending:true})
+      .limit(1);
+
+    if(error) throw error;
+
+    if(!data || !data.length){
+      status.textContent =
+        "No settings row exists in site_settings.";
+      return;
+    }
+
+    const row = data[0];
+
+    settingsId = row.id;
+
+    fields.forEach(key=>{
+      document.getElementById(key).value = row[key] || "";
+    });
+
+    let savedImages = row.hero_images || [];
+
+    if(typeof savedImages === "string"){
+      try{
+        savedImages = JSON.parse(savedImages);
+      }catch{
+        savedImages = [];
+      }
+    }
+
+    heroImages = Array.isArray(savedImages)
+      ? savedImages.filter(url => typeof url === "string" && url.trim())
+      : [];
+
+    renderImages();
+
+  }catch(error){
+
+    console.error(error);
+    status.textContent = "Could not load settings: " + error.message;
+    return;
+
+  }
+
+  document.getElementById("upload-images").addEventListener(
+    "click",
+    async ()=>{
+
+      const input = document.getElementById("hero-files");
+      const files = [...input.files];
+
+      if(!files.length){
+        uploadStatus.textContent = "Choose one or more images first.";
+        return;
+      }
+
+      const invalid = files.find(file =>
+        !file.type.startsWith("image/") ||
+        file.size > 10 * 1024 * 1024
+      );
+
+      if(invalid){
+        uploadStatus.textContent =
+          "Please select image files smaller than 10 MB each.";
+        return;
+      }
+
+      const button = document.getElementById("upload-images");
+      button.disabled = true;
+
+      let uploaded = 0;
+
+      try{
+
+        for(const file of files){
+
+          uploadStatus.textContent =
+            "Uploading " + (uploaded + 1) + " of " + files.length + "...";
+
+          const safeName = file.name.toLowerCase()
+            .replace(/[^a-z0-9._-]+/g,"-");
+
+          const path =
+            "site/hero-images/" + crypto.randomUUID() + "-" + safeName;
+
+          const {error:uploadError} = await db.storage
+            .from(bucket)
+            .upload(path,file,{
+              cacheControl:"31536000",
+              upsert:false,
+              contentType:file.type
+            });
+
+          if(uploadError) throw uploadError;
+
+          const {data} = db.storage
+            .from(bucket)
+            .getPublicUrl(path);
+
+          if(!data || !data.publicUrl){
+            throw new Error("Could not create public image URL.");
+          }
+
+          heroImages.push(data.publicUrl);
+          uploaded++;
+          renderImages();
+
+        }
+
+        input.value = "";
+
+        uploadStatus.textContent =
+          uploaded + " image(s) uploaded. Click SAVE SETTINGS to keep the collection.";
+
+      }catch(error){
+
+        console.error(error);
+
+        uploadStatus.textContent =
+          uploaded + " image(s) uploaded. Upload stopped: " + error.message +
+          ". Save settings to keep the successfully uploaded images.";
+
+      }finally{
+
+        button.disabled = false;
+
+      }
+
+    }
+  );
 
   form.addEventListener("submit",async event=>{
+
     event.preventDefault();
-    status.textContent="Saving settings…";
-    const values={};
+
+    const saveButton = form.querySelector(".save-settings");
+
+    saveButton.disabled = true;
+    status.textContent = "Saving settings...";
+
+    const values = {};
+
     fields.forEach(key=>{
-      const el=document.getElementById(key);
-      values[key]=el.type==="checkbox"?el.checked:el.value.trim();
+      values[key] = document.getElementById(key).value.trim();
     });
-    values.updated_at=new Date().toISOString();
+
+    values.hero_images = heroImages;
+    values.updated_at = new Date().toISOString();
 
     try{
-      const {error}=await db.from("site_settings").update(values).eq("id",settingsId);
-      if(error)throw error;
-      status.textContent="Settings saved successfully.";
-    }catch(e){
-      console.error(e);
-      status.textContent="Save failed: "+e.message;
+
+      const {error} = await db
+        .from("site_settings")
+        .update(values)
+        .eq("id",settingsId);
+
+      if(error) throw error;
+
+      status.textContent =
+        "Settings saved successfully. Your hero image collection is updated.";
+
+    }catch(error){
+
+      console.error(error);
+      status.textContent = "Save failed: " + error.message;
+
+    }finally{
+
+      saveButton.disabled = false;
+
     }
+
   });
+
 })();
 </script>
+
 </body>
 </html>
