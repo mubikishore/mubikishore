@@ -679,11 +679,12 @@ body.other-viewer-open {
     showSectionError("cms-other", "Other content could not be loaded.");
   }
 
-  // HOMEPAGE HERO REEL
+  
+  // HOMEPAGE HERO IMAGE COLLECTION
   try {
     const { data, error } = await db
       .from("site_settings")
-      .select("hero_video, hero_poster, hero_autoplay, hero_muted, hero_loop")
+      .select("hero_images")
       .order("id", { ascending: true })
       .limit(1);
 
@@ -692,33 +693,53 @@ body.other-viewer-open {
     const settings = data && data[0];
     const hero = document.getElementById("hero-media");
 
-    if (settings && settings.hero_video && hero) {
-      const videoUrl = safeUrl(settings.hero_video);
+    const images = Array.isArray(settings?.hero_images)
+      ? settings.hero_images.map(safeUrl).filter(Boolean)
+      : [];
 
-      if (!videoUrl) throw new Error("The hero video URL is invalid.");
+    if (hero && images.length) {
+      let currentIndex = Math.floor(Math.random() * images.length);
 
-      const video = document.createElement("video");
-      video.src = videoUrl;
-      video.autoplay = settings.hero_autoplay !== false;
-      video.muted = settings.hero_muted !== false;
-      video.loop = settings.hero_loop !== false;
-      video.playsInline = true;
-      video.controls = false;
-      video.preload = "metadata";
+      const img = document.createElement("img");
+      img.alt = "MUBIKISHORE selected work";
+      img.loading = "eager";
+      img.fetchPriority = "high";
+      img.decoding = "async";
+      img.style.opacity = "0";
+      img.style.transition = "opacity 900ms ease";
 
-      const posterUrl = safeUrl(settings.hero_poster);
-      if (posterUrl) video.poster = posterUrl;
+      function showHeroImage(index) {
+        currentIndex = index;
 
-      hero.replaceChildren(video);
+        img.style.opacity = "0";
 
-      if (video.autoplay) {
-        video.play().catch(error => {
-          console.warn("Hero autoplay was blocked:", error);
-        });
+        const nextImage = images[currentIndex];
+
+        const preload = new Image();
+
+        preload.onload = () => {
+          img.src = nextImage;
+          img.style.opacity = "1";
+        };
+
+        preload.onerror = () => {
+          console.warn("Could not load hero image:", nextImage);
+        };
+
+        preload.src = nextImage;
+      }
+
+      hero.replaceChildren(img);
+      showHeroImage(currentIndex);
+
+      if (images.length > 1) {
+        setInterval(() => {
+          showHeroImage((currentIndex + 1) % images.length);
+        }, 7000);
       }
     }
   } catch (error) {
-    console.error("Hero reel:", error);
+    console.error("Hero images:", error);
   }
 })();
 </script>
