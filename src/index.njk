@@ -101,35 +101,42 @@ layout: base.njk
   <span>© 2026</span>
 </footer>
 
-/* FULL-SCREEN HERO */
-
+<style>
+/* HERO */
 .hero {
-  height: calc(100svh - 50px);
-  min-height: 0;
-  box-sizing: border-box;
-  padding-top: 12px;
-  padding-bottom: 12px;
-  display: flex;
-  flex-direction: column;
+  min-height: 750px;
+  padding-top: 45px;
+  padding-bottom: 16px;
 }
 
 .hero-box {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  flex: 1;
-  min-height: 0;
-  height: auto;
-  max-height: none;
+  height: 62vh;
+  min-height: 420px;
+  max-height: 720px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #111;
 }
 
-.hero-meta {
-  flex-shrink: 0;
-  padding-top: 12px;
+.hero-video-layer {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background: radial-gradient(circle, #292929, #0a0a0a);
+}
+
+.hero-video-layer video,
+.hero-video-layer img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 45%;
 }
 
 .hero-overlay {
