@@ -921,7 +921,7 @@ body.other-viewer-open {
   try {
     const { data, error } = await db
       .from("site_settings")
-      .select("hero_images")
+      .select("hero_images, instagram, email")
       .order("id", { ascending: true })
       .limit(1);
 
