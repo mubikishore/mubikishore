@@ -183,10 +183,29 @@ function instagramUrl(value) {
   }
 }
 
+function youtubePlaylistUrl(value) {
+  try {
+    const u = new URL(value);
+    const host = u.hostname.toLowerCase();
+
+    const validHost = [
+      "youtube.com",
+      "www.youtube.com",
+      "m.youtube.com"
+    ].includes(host);
+
+    return validHost &&
+      u.pathname === "/playlist" &&
+      /^[a-zA-Z0-9_-]+$/.test(u.searchParams.get("list") || "");
+  } catch {
+    return false;
+  }
+}
+
 function validVideo(item) {
   return item.platform === "instagram"
     ? instagramUrl(item.url)
-    : !!youtubeId(item.url);
+    : !!youtubeId(item.url) || youtubePlaylistUrl(item.url);
 }
 
 function renderVideos() {
