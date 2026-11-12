@@ -926,7 +926,7 @@ body.other-viewer-open {
       .limit(1);
 
     if (error) throw error;
-
+const settings = data && data[0];
    // Update Instagram link
 const instagramLink = document.getElementById("site-instagram");
 const instagramValue = String(settings?.instagram || "").trim();
