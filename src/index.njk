@@ -927,7 +927,26 @@ body.other-viewer-open {
 
     if (error) throw error;
 
-    const settings = data && data[0];
+   // Update Instagram link
+const instagramLink = document.getElementById("site-instagram");
+const instagramValue = String(settings?.instagram || "").trim();
+
+if (instagramLink && instagramValue) {
+  const instagramUrl = instagramValue.startsWith("http")
+    ? instagramValue
+    : `https://${instagramValue}`;
+
+  instagramLink.href = instagramUrl;
+}
+
+// Update email link
+const emailLink = document.getElementById("site-email");
+const emailAddress = String(settings?.email || "").trim();
+
+if (emailLink && emailAddress) {
+  emailLink.href = `mailto:${emailAddress}`;
+  emailLink.textContent = emailAddress;
+}
     const hero = document.getElementById("hero-media");
 
     const images = Array.isArray(settings?.hero_images)
